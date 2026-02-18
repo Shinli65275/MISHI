@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ producto.nombre }} - Inventario MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-header h2 { color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.3rem; }
+
+    .btn-back {
+        padding: 9px 18px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.87rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s;
+    }
+
+    .btn-back:hover { background: #667eea; color: white; }
+
+    .prod-info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 22px 26px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .prod-info-left h3 { margin: 0 0 4px 0; font-size: 1.5rem; color: #2c3e50; }
+    .prod-info-left p  { margin: 0; color: #adb5bd; font-size: 0.85rem; }
+
+    .prod-info-stats {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .info-stat { text-align: center; }
+    .info-stat .stat-val { font-size: 1.6rem; font-weight: 800; color: #2c3e50; line-height: 1; }
+    .info-stat .stat-lbl { font-size: 0.7rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    /* Tabla lotes */
+    .card-section { background: white; border-radius: 15px; padding: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+    .section-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 18px 0;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .lotes-table { width: 100%; border-collapse: collapse; }
+
+    .lotes-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .lotes-table thead th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .lotes-table tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+    .lotes-table tbody tr:last-child { border-bottom: none; }
+    .lotes-table tbody tr:hover { background: #fafbff; }
+    .lotes-table tbody td { padding: 13px 16px; color: #495057; font-size: 0.87rem; }
+
+    .lote-cod-badge {
+        background: #f0f2ff;
+        color: #667eea;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: #adb5bd; }
+    .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; opacity: 0.35; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .page-header h2   { font-size: 1.1rem; }
+        .prod-info-left h3 { font-size: 1.2rem; }
+        .info-stat .stat-val { font-size: 1.3rem; }
+        .prod-info-stats  { gap: 16px; }
+    }
+
+    @media (max-width: 540px) {
+        .page-header      { padding: 14px 16px; flex-direction: column; align-items: flex-start; }
+        .btn-back         { width: 100%; justify-content: center; }
+        .prod-info-card   { flex-direction: column; align-items: flex-start; padding: 16px 18px; }
+        .prod-info-stats  { width: 100%; justify-content: space-between; }
+        .card-section     { padding: 16px; }
+
+        /* Tabla → ocultar fecha y precio, dejar código y cantidad */
+        .lotes-table thead th:nth-child(3),
+        .lotes-table tbody td:nth-child(3),
+        .lotes-table thead th:nth-child(4),
+        .lotes-table tbody td:nth-child(4) { display: none; }
+
+        .lotes-table thead th,
+        .lotes-table tbody td { padding: 10px 12px; }
+        .lote-cod-badge { font-size: 0.75rem; }
+    }
+
+    @media (max-width: 400px) {
+        .prod-info-stats  { gap: 10px; }
+        .info-stat .stat-val { font-size: 1.15rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="page-header">
+        <h2><i class="bi bi-box-seam"></i> {{ producto.nombre }}</h2>
+        <a href="{% url 'inventario' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- Info del producto -->
+    <div class="prod-info-card">
+        <div class="prod-info-left">
+            <h3>{{ producto.nombre }}</h3>
+            <p>Precio de venta: ${{ producto.precio_venta|floatformat:2 }} · ID #{{ producto.id }}</p>
+        </div>
+        <div class="prod-info-stats">
+            <div class="info-stat">
+                <div class="stat-val" style="color:{% if producto.stock == 0 %}#c62828{% elif producto.stock <= 10 %}#e65100{% else %}#2e7d32{% endif %};">
+                    {{ producto.stock }}
+                </div>
+                <div class="stat-lbl">Unidades</div>
+            </div>
+            <div class="info-stat">
+                <div class="stat-val">{{ lotes.count }}</div>
+                <div class="stat-lbl">Lotes</div>
+            </div>
+            <div class="info-stat">
+                <div class="stat-val">${{ lotes.0.precio_compra|floatformat:2|default:"—" }}</div>
+                <div class="stat-lbl">Último precio compra</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de lotes -->
+    <div class="card-section">
+        <div class="section-title">
+            <i class="bi bi-layers-fill" style="color:#667eea;"></i>
+            Historial de lotes
+        </div>
+
+        {% if lotes %}
+        <div style="overflow-x:auto; border-radius:8px; overflow:hidden;">
+            <table class="lotes-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-upc-scan"></i> Código lote</th>
+                        <th><i class="bi bi-123"></i> Cantidad</th>
+                        <th><i class="bi bi-tag"></i> Precio compra</th>
+                        <th><i class="bi bi-calendar3"></i> Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lote in lotes %}
+                    <tr>
+                        <td><span class="lote-cod-badge">{{ lote.lote }}</span></td>
+                        <td><strong>{{ lote.cantidad }}</strong> uds.</td>
+                        <td>${{ lote.precio_compra|floatformat:2 }}</td>
+                        <td style="color:#6c757d; font-size:0.82rem;">
+                            <i class="bi bi-clock"></i>
+                            {{ lote.fecha_creacion|date:"d/m/Y" }}
+                            <span style="color:#adb5bd;">{{ lote.fecha_creacion|date:"H:i" }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p style="margin:0;">No hay lotes registrados para este producto.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

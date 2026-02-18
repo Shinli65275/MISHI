@@ -466,16 +466,94 @@
         #ticketPreview { width: 280px !important; background: white !important; }
     }
 
+    /* ── Responsive tabla ── */
+
+    /* Ocultar columna fecha en tablet */
     @media (max-width: 768px) {
         .page-header h2 { font-size: 1.2rem; }
         .stats-grid { grid-template-columns: 1fr 1fr; }
-        .ingresos-table thead th:nth-child(4),
-        .ingresos-table tbody td:nth-child(4) { display: none; }
+
+        .col-fecha { display: none; }
+        .col-ref   { display: none; }
+
+        .ingresos-table thead th,
+        .ingresos-table tbody td { padding: 11px 10px; }
     }
 
-    @media (max-width: 480px) {
-        .stats-grid { grid-template-columns: 1fr; }
+    /* En móvil: convertir tabla en tarjetas apiladas */
+    @media (max-width: 540px) {
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+
+        /* Ocultar la tabla tradicional */
+        .tabla-wrap { overflow: visible; }
+        .ingresos-table thead { display: none; }
+
+        .ingresos-table tbody tr {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 1.5px solid #f0f0f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            border-bottom: 1.5px solid #f0f0f0 !important;
+        }
+
+        .ingresos-table tbody tr:hover { background: #fafbff; }
+
+        .ingresos-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border: none;
+            font-size: 0.86rem;
+        }
+
+        /* Etiquetas automáticas via data-label */
+        .ingresos-table tbody td::before {
+            content: attr(data-label);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            margin-right: 10px;
+        }
+
+        /* Ocultar celdas innecesarias en móvil */
+        .col-id    { display: none; }
+        .col-ref   { display: none; }
+
+        /* Fila del concepto: más destacada */
+        .col-concepto {
+            border-bottom: 1px dashed #f0f0f0;
+            padding-bottom: 9px !important;
+            margin-bottom: 4px;
+        }
+
+        .col-concepto::before { display: none; }
+
+        .concepto-cell { width: 100%; }
         .concepto-icon { display: none; }
+        .concepto-nombre { font-size: 0.95rem; }
+
+        /* Monto alineado a la derecha */
+        .col-monto { justify-content: space-between; }
+        .monto-valor { font-size: 1rem; }
+
+        /* Botón ticket al ancho completo */
+        .col-accion { justify-content: flex-end; padding-top: 8px; }
+        .col-accion::before { display: none; }
+        .btn-detalle { width: 100%; justify-content: center; padding: 9px; }
+    }
+
+    @media (max-width: 400px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .filtros-card { flex-direction: column; }
+        .filtro-group { min-width: unset; }
     }
 </style>
 {% endblock %}
@@ -552,20 +630,20 @@
             <table class="ingresos-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th><i class="bi bi-tag"></i> Concepto</th>
-                        <th><i class="bi bi-hash"></i> Referencia</th>
-                        <th><i class="bi bi-clock"></i> Fecha</th>
-                        <th class="text-right"><i class="bi bi-cash-stack"></i> Monto</th>
-                        <th></th>
+                        <th class="col-id">#</th>
+                        <th class="col-concepto"><i class="bi bi-tag"></i> Concepto</th>
+                        <th class="col-ref"><i class="bi bi-hash"></i> Referencia</th>
+                        <th class="col-fecha"><i class="bi bi-clock"></i> Fecha</th>
+                        <th class="col-monto text-right"><i class="bi bi-cash-stack"></i> Monto</th>
+                        <th class="col-accion"></th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for ingreso in ingresos %}
                     <tr>
-                        <td style="color:#adb5bd; font-weight:600; font-size:0.8rem;">{{ ingreso.id }}</td>
+                        <td class="col-id" style="color:#adb5bd; font-weight:600; font-size:0.8rem;">{{ ingreso.id }}</td>
 
-                        <td>
+                        <td class="col-concepto">
                             <div class="concepto-cell">
                                 <div class="concepto-icon">
                                     <i class="bi bi-arrow-down-circle-fill"></i>
@@ -574,7 +652,7 @@
                             </div>
                         </td>
 
-                        <td>
+                        <td class="col-ref">
                             {% if ingreso.referencia %}
                                 <span class="ref-badge">
                                     <i class="bi bi-link-45deg"></i>
@@ -585,7 +663,7 @@
                             {% endif %}
                         </td>
 
-                        <td>
+                        <td class="col-fecha" data-label="Fecha">
                             <div class="fecha-text">
                                 <i class="bi bi-calendar3"></i>
                                 {{ ingreso.fecha|date:"d/m/Y" }}
@@ -595,13 +673,13 @@
                             </div>
                         </td>
 
-                        <td>
+                        <td class="col-monto" data-label="Monto">
                             <div class="monto-valor">
                                 ${{ ingreso.monto|floatformat:2 }}
                             </div>
                         </td>
 
-                        <td>
+                        <td class="col-accion">
                             <button class="btn-detalle" onclick="verTicket(
                                 '{{ ingreso.id }}',
                                 '{{ ingreso.concepto|escapejs }}',

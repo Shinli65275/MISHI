@@ -354,19 +354,76 @@
 
     .empty-chart i { font-size: 2.5rem; opacity: 0.4; }
 
+    /* overide inline grid for top-report row on mobile */
+    @media (max-width: 768px) {
+        .reporte-grid-2col { grid-template-columns: 1fr !important; }
+    }
+
+    /* ── Tablet ── */
     @media (max-width: 1024px) {
-        .charts-grid   { grid-template-columns: 1fr; }
-        .chart-card.full { grid-column: 1; }
-        .reporte-grid  { grid-template-columns: 1fr; }
+        .charts-grid              { grid-template-columns: 1fr; }
+        .chart-card.full          { grid-column: 1; }
+        .reporte-grid             { grid-template-columns: 1fr !important; }
     }
 
-    @media (max-width: 600px) {
-        .kpi-grid { grid-template-columns: 1fr 1fr; }
-        .page-header h2 { font-size: 1.2rem; }
+    /* ── Móvil grande ── */
+    @media (max-width: 768px) {
+        .page-header              { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px 18px; }
+        .page-header h2           { font-size: 1.15rem; }
+        .periodo-form             { width: 100%; }
+        .periodo-select           { flex: 1; min-width: 0; }
+        .btn-periodo              { width: 100%; justify-content: center; }
+
+        .kpi-grid                 { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+        .kpi-value                { font-size: 1.35rem; }
+
+        .chart-card               { padding: 16px; }
+        .reporte-card             { padding: 16px; }
+
+        /* Mini reporte: 1 col en lugar de 2 */
+        .mini-reporte-top         { grid-template-columns: 1fr !important; }
+        .mini-reporte-bottom      { grid-template-columns: 1fr 1fr !important; }
+
+        /* Tendencia: reducir altura */
+        #chartTendencia           { height: 180px !important; }
     }
 
-    @media (max-width: 400px) {
-        .kpi-grid { grid-template-columns: 1fr; }
+    /* ── Móvil pequeño ── */
+    @media (max-width: 540px) {
+        .kpi-grid                 { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .kpi-card                 { padding: 14px 14px; }
+        .kpi-value                { font-size: 1.15rem; }
+        .kpi-label                { font-size: 0.68rem; }
+        .kpi-sub                  { font-size: 0.68rem; }
+
+        .charts-grid              { gap: 14px; margin-bottom: 18px; }
+        .chart-header             { flex-direction: column; gap: 6px; }
+        .chart-legend             { gap: 10px; }
+
+        /* Ocultar subtítulo en gráficas para ganar espacio */
+        .chart-subtitle           { display: none; }
+
+        /* Gráficas más bajas en móvil */
+        #chartIngresos,
+        #chartEgresos             { max-height: 180px; }
+        #chartTendencia           { max-height: 160px; }
+
+        /* Mini reporte bottom: 3 cols → 1 col */
+        .mini-reporte-bottom      { grid-template-columns: 1fr !important; gap: 8px !important; }
+
+        /* Selector periodo en columna */
+        .periodo-form             { flex-direction: column; align-items: stretch; }
+        .periodo-form label       { display: none; }
+        .periodo-select           { width: 100%; }
+
+        /* Balance visual más compacto */
+        .bv-balance-valor         { font-size: 1.1rem; }
+    }
+
+    /* ── Móvil muy pequeño ── */
+    @media (max-width: 360px) {
+        .kpi-grid                 { grid-template-columns: 1fr; }
+        .page-header              { padding: 14px; }
     }
 </style>
 {% endblock %}
@@ -514,6 +571,76 @@
 
     <!-- ── Reporte del mes ── -->
 
+    <!-- Fila 1: Top ingresos + Top egresos -->
+    <div class="reporte-grid reporte-grid-2col" style="grid-template-columns: 1fr 1fr; margin-bottom:22px;">
+
+        <!-- Top conceptos de ingreso -->
+        <div class="reporte-card">
+            <div class="reporte-titulo">
+                <i class="bi bi-trophy-fill" style="color:#f7971e;"></i>
+                Top ingresos — {{ nombre_mes }} {{ anio_actual }}
+            </div>
+            {% if top_conceptos %}
+            <table class="top-table">
+                <thead>
+                    <tr><th>#</th><th>Concepto</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in top_conceptos %}
+                    <tr>
+                        <td>
+                            <span class="rank-badge {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
+                                {{ forloop.counter }}
+                            </span>
+                        </td>
+                        <td>{{ item.concepto }}</td>
+                        <td>${{ item.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-chart">
+                <i class="bi bi-inbox"></i>
+                Sin ingresos en este periodo
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Top categorías de egreso -->
+        <div class="reporte-card">
+            <div class="reporte-titulo">
+                <i class="bi bi-graph-down-arrow" style="color:#f5576c;"></i>
+                Top egresos — {{ nombre_mes }} {{ anio_actual }}
+            </div>
+            {% if top_categorias %}
+            <table class="top-table">
+                <thead>
+                    <tr><th>#</th><th>Categoría</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in top_categorias %}
+                    <tr>
+                        <td>
+                            <span class="rank-badge" style="background:linear-gradient(135deg,{% if forloop.counter == 1 %}#f5576c,#f093fb{% elif forloop.counter == 2 %}#f093fb,#f5576c{% elif forloop.counter == 3 %}#fa709a,#fee140{% else %}#adb5bd,#6c757d{% endif %});">
+                                {{ forloop.counter }}
+                            </span>
+                        </td>
+                        <td>{{ item.categoria }}</td>
+                        <td style="color:#c62828;">${{ item.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-chart">
+                <i class="bi bi-inbox"></i>
+                Sin egresos en este periodo
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
 
     <!-- Fila 2: Balance visual -->
     <div class="reporte-grid" style="grid-template-columns: 1fr 340px;">
@@ -525,7 +652,7 @@
                 Mini reporte — {{ nombre_mes }} {{ anio_actual }}
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+            <div class="mini-reporte-top" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
                 <div style="background:#f0f2ff; border-radius:11px; padding:16px 18px;">
                     <div style="font-size:0.75rem; color:#667eea; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
                         <i class="bi bi-arrow-down-circle-fill"></i> Total Ingresos
@@ -548,7 +675,7 @@
                 </div>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+            <div class="mini-reporte-bottom" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
                 <div style="background:#f8f9fa; border-radius:9px; padding:13px 15px; text-align:center;">
                     <div style="font-size:0.72rem; color:#adb5bd; font-weight:600; text-transform:uppercase; margin-bottom:5px;"><i class="bi bi-bag-check" style="color:#4facfe;"></i> Ventas</div>
                     <div style="font-size:1.3rem; font-weight:800; color:#2c3e50;">{{ num_ventas_mes }}</div>

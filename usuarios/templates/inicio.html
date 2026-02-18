@@ -1,15 +1,733 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block title %}Inicio - MISHI{% endblock %}
 
-<div class="container mt-4">
-    <h1>Bem-vindo ao Mishi!</h1>
-    <p>Gerencie suas finanças pessoais de forma fácil e eficiente.</p>
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <i class="bi bi-wallet2" style="font-size: 2rem;"></i>
-                    <h5 class="card-title mt-2">Contas</h5>
-                    <p class="card-text">Gerencie suas contas bancárias e cartões de crédito.</p>
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap');
+
+    :root {
+        --ink:    #1a1a2e;
+        --purple: #667eea;
+        --violet: #764ba2;
+        --soft:   #f4f3ff;
+        --muted:  #8b8fa8;
+        --white:  #ffffff;
+        --green:  #2e7d32;
+        --red:    #c62828;
+        --card-shadow: 0 2px 16px rgba(102,126,234,0.08);
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: #f7f8fc; }
+
+    /* ── Greeting strip ── */
+    .greeting-strip {
+        background: linear-gradient(135deg, #1a1a2e 0%, #2d2b55 60%, #667eea 100%);
+        border-radius: 18px;
+        padding: 28px 32px;
+        margin-bottom: 22px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .greeting-strip::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 220px; height: 220px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.04);
+    }
+
+    .greeting-strip::after {
+        content: '';
+        position: absolute;
+        bottom: -80px; right: 80px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(102,126,234,0.18);
+    }
+
+    .greeting-text { z-index: 1; }
+
+    .greeting-sub {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.55);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+    }
+
+    .greeting-title {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.9rem;
+        color: white;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .greeting-date {
+        font-size: 0.82rem;
+        color: rgba(255,255,255,0.45);
+    }
+
+    .greeting-badges {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        z-index: 1;
+    }
+
+    .g-badge {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 40px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        backdrop-filter: blur(6px);
+        transition: background 0.2s;
+    }
+
+    .g-badge:hover { background: rgba(255,255,255,0.18); }
+    .g-badge i { opacity: 0.8; }
+
+    /* ── KPI row ── */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .kpi-tile {
+        background: var(--white);
+        border-radius: 15px;
+        padding: 20px 22px;
+        box-shadow: var(--card-shadow);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: default;
+    }
+
+    .kpi-tile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px rgba(102,126,234,0.14);
+    }
+
+    .kpi-tile::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .kpi-tile.t1::after { background: linear-gradient(90deg, #667eea, #764ba2); }
+    .kpi-tile.t2::after { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+    .kpi-tile.t3::after { background: linear-gradient(90deg, #f5576c, #f093fb); }
+    .kpi-tile.t4::after { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+
+    .kpi-icon {
+        width: 40px; height: 40px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    .kpi-tile.t1 .kpi-icon { background: #f0f2ff; color: #667eea; }
+    .kpi-tile.t2 .kpi-icon { background: #e8fff3; color: #2e7d32; }
+    .kpi-tile.t3 .kpi-icon { background: #fff0f2; color: #f5576c; }
+    .kpi-tile.t4 .kpi-icon { background: #e8f6ff; color: #4facfe; }
+
+    .kpi-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        margin-bottom: 4px;
+    }
+
+    .kpi-val {
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 6px;
+        font-family: 'DM Serif Display', serif;
+    }
+
+    .kpi-delta {
+        font-size: 0.72rem;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .kpi-delta.up   { color: #2e7d32; }
+    .kpi-delta.down { color: #c62828; }
+    .kpi-delta.flat { color: var(--muted); }
+
+    /* ── Main grid ── */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 18px;
+        margin-bottom: 22px;
+    }
+
+    /* ── Card base ── */
+    .card {
+        background: var(--white);
+        border-radius: 15px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+    }
+
+    .card-head {
+        padding: 18px 22px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .card-title i { color: var(--purple); }
+
+    .card-link {
+        font-size: 0.78rem;
+        color: var(--purple);
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: gap 0.2s;
+    }
+
+    .card-link:hover { gap: 7px; }
+
+    /* ── Accesos rápidos ── */
+    .accesos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 0 18px 18px;
+    }
+
+    .acceso-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 11px;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1.5px solid #f0f0f0;
+    }
+
+    .acceso-btn:hover {
+        border-color: var(--purple);
+        background: var(--soft);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(102,126,234,0.12);
+    }
+
+    .acceso-ico {
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .acceso-btn.a1 .acceso-ico { background: #f0f2ff; color: #667eea; }
+    .acceso-btn.a2 .acceso-ico { background: #e8fff3; color: #2e7d32; }
+    .acceso-btn.a3 .acceso-ico { background: #fff0f2; color: #f5576c; }
+    .acceso-btn.a4 .acceso-ico { background: #e8f6ff; color: #4facfe; }
+    .acceso-btn.a5 .acceso-ico { background: #fffbe8; color: #f7971e; }
+    .acceso-btn.a6 .acceso-ico { background: #f5f0ff; color: #764ba2; }
+
+    .acceso-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .acceso-sub {
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-top: 1px;
+    }
+
+    /* ── Actividad reciente ── */
+    .actividad-list { padding: 0 0 4px; }
+
+    .actividad-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 22px;
+        border-bottom: 1px solid #f5f5f5;
+        transition: background 0.15s;
+    }
+
+    .actividad-item:last-child { border-bottom: none; }
+    .actividad-item:hover { background: #fafbff; }
+
+    .act-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .act-dot.ing  { background: #667eea; }
+    .act-dot.egr  { background: #f5576c; }
+    .act-dot.vta  { background: #43e97b; }
+    .act-dot.comp { background: #4facfe; }
+
+    .act-info { flex: 1; min-width: 0; }
+
+    .act-concepto {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .act-meta {
+        font-size: 0.71rem;
+        color: var(--muted);
+        margin-top: 1px;
+    }
+
+    .act-monto {
+        font-size: 0.88rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .act-monto.ing  { color: #2e7d32; }
+    .act-monto.egr  { color: #c62828; }
+    .act-monto.vta  { color: #2e7d32; }
+    .act-monto.comp { color: #1565c0; }
+
+    /* ── Mini chart canvas ── */
+    .mini-chart-wrap {
+        padding: 0 18px 18px;
+        height: 140px;
+    }
+
+    /* ── Estado vacío ── */
+    .empty-tip {
+        text-align: center;
+        padding: 30px 20px;
+        color: var(--muted);
+        font-size: 0.85rem;
+    }
+
+    .empty-tip i { font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.35; }
+
+    /* ── Bottom row ── */
+    .bottom-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    /* ── Stock alerta ── */
+    .stock-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 22px;
+        border-bottom: 1px solid #f5f5f5;
+        transition: background 0.15s;
+    }
+
+    .stock-item:last-child { border-bottom: none; }
+    .stock-item:hover { background: #fffbf0; }
+
+    .stock-bar-wrap { flex: 1; }
+
+    .stock-nombre {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 4px;
+    }
+
+    .stock-track {
+        height: 5px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .stock-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .stock-fill.low    { background: linear-gradient(90deg, #f5576c, #f093fb); }
+    .stock-fill.medium { background: linear-gradient(90deg, #f7971e, #ffd200); }
+    .stock-fill.ok     { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+
+    .stock-qty {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--ink);
+        min-width: 36px;
+        text-align: right;
+    }
+
+    .stock-qty.low    { color: #c62828; }
+    .stock-qty.medium { color: #e65100; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1024px) {
+        .kpi-row       { grid-template-columns: 1fr 1fr; }
+        .main-grid     { grid-template-columns: 1fr; }
+        .bottom-row    { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .greeting-strip  { padding: 22px 20px; }
+        .greeting-title  { font-size: 1.4rem; }
+        .kpi-row         { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .kpi-val         { font-size: 1.35rem; }
+        .accesos-grid    { grid-template-columns: 1fr; }
+        .greeting-badges { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- ── Greeting ── -->
+    <div class="greeting-strip">
+        <div class="greeting-text">
+            <div class="greeting-sub">Panel de control</div>
+            <div class="greeting-title" id="greetingTitle">Buen día 👋</div>
+            <div class="greeting-date" id="greetingDate">—</div>
+        </div>
+        <div class="greeting-badges">
+            <a href="{% url 'nueva_venta' %}" class="g-badge">
+                <i class="bi bi-bag-plus-fill"></i> Nueva Venta
+            </a>
+            <a href="{% url 'lista_ingresos' %}" class="g-badge">
+                <i class="bi bi-graph-up-arrow"></i> Ingresos
+            </a>
+            <a href="{% url 'graficas' %}" class="g-badge">
+                <i class="bi bi-bar-chart-line-fill"></i> Reportes
+            </a>
+        </div>
+    </div>
+
+    <!-- ── KPIs ── -->
+    <div class="kpi-row">
+        <div class="kpi-tile t1">
+            <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="kpi-label">Ventas hoy</div>
+            <div class="kpi-val">${{ ventas_hoy|floatformat:2 }}</div>
+            <div class="kpi-delta {% if delta_ventas >= 0 %}up{% else %}down{% endif %}">
+                <i class="bi bi-arrow-{% if delta_ventas >= 0 %}up{% else %}down{% endif %}-short"></i>
+                {{ delta_ventas|floatformat:1 }}% vs ayer
+            </div>
+        </div>
+        <div class="kpi-tile t2">
+            <div class="kpi-icon"><i class="bi bi-bag-check-fill"></i></div>
+            <div class="kpi-label">Órdenes hoy</div>
+            <div class="kpi-val">{{ ordenes_hoy }}</div>
+            <div class="kpi-delta flat"><i class="bi bi-receipt"></i> transacciones</div>
+        </div>
+        <div class="kpi-tile t3">
+            <div class="kpi-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+            <div class="kpi-label">Egresos hoy</div>
+            <div class="kpi-val">${{ egresos_hoy|floatformat:2 }}</div>
+            <div class="kpi-delta flat"><i class="bi bi-calendar3"></i> {{ fecha_hoy }}</div>
+        </div>
+        <div class="kpi-tile t4">
+            <div class="kpi-icon"><i class="bi bi-box-seam-fill"></i></div>
+            <div class="kpi-label">Productos</div>
+            <div class="kpi-val">{{ total_productos }}</div>
+            <div class="kpi-delta {% if productos_bajo_stock > 0 %}down{% else %}flat{% endif %}">
+                {% if productos_bajo_stock > 0 %}
+                    <i class="bi bi-exclamation-triangle-fill"></i> {{ productos_bajo_stock }} con stock bajo
+                {% else %}
+                    <i class="bi bi-check-circle"></i> Stock en orden
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Main grid ── -->
+    <div class="main-grid">
+
+        <!-- Izquierda: actividad + mini chart -->
+        <div style="display:flex; flex-direction:column; gap:18px;">
+
+            <!-- Accesos rápidos -->
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title"><i class="bi bi-lightning-charge-fill"></i> Accesos rápidos</div>
+                </div>
+                <div class="accesos-grid">
+                    <a href="{% url 'nueva_venta' %}" class="acceso-btn a1">
+                        <div class="acceso-ico"><i class="bi bi-bag-plus-fill"></i></div>
+                        <div>
+                            <div class="acceso-label">Nueva Venta</div>
+                            <div class="acceso-sub">Registrar venta</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'lista_ingresos' %}" class="acceso-btn a2">
+                        <div class="acceso-ico"><i class="bi bi-arrow-down-circle-fill"></i></div>
+                        <div>
+                            <div class="acceso-label">Ingresos</div>
+                            <div class="acceso-sub">Ver registros</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'lista_egresos' %}" class="acceso-btn a3">
+                        <div class="acceso-ico"><i class="bi bi-arrow-up-circle-fill"></i></div>
+                        <div>
+                            <div class="acceso-label">Egresos</div>
+                            <div class="acceso-sub">Ver gastos</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'lista_compras' %}" class="acceso-btn a4">
+                        <div class="acceso-ico"><i class="bi bi-truck"></i></div>
+                        <div>
+                            <div class="acceso-label">Compras</div>
+                            <div class="acceso-sub">Órdenes de compra</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'inventario' %}" class="acceso-btn a5">
+                        <div class="acceso-ico"><i class="bi bi-boxes"></i></div>
+                        <div>
+                            <div class="acceso-label">Inventario</div>
+                            <div class="acceso-sub">Gestionar stock</div>
+                        </div>
+                    </a>
+                    <a href="{% url 'graficas' %}" class="acceso-btn a6">
+                        <div class="acceso-ico"><i class="bi bi-bar-chart-line-fill"></i></div>
+                        <div>
+                            <div class="acceso-label">Reportes</div>
+                            <div class="acceso-sub">Gráficas del mes</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mini gráfica del mes -->
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title"><i class="bi bi-activity"></i> Ingresos — últimos 7 días</div>
+                    <a href="{% url 'graficas' %}" class="card-link">Ver más <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="mini-chart-wrap">
+                    <canvas id="miniChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Derecha: actividad reciente -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title"><i class="bi bi-clock-history"></i> Actividad reciente</div>
+                <a href="{% url 'lista_ingresos' %}" class="card-link">Ver todo <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="actividad-list">
+                {% for item in actividad_reciente %}
+                <div class="actividad-item">
+                    <div class="act-dot {{ item.tipo }}"></div>
+                    <div class="act-info">
+                        <div class="act-concepto">{{ item.concepto }}</div>
+                        <div class="act-meta">{{ item.fecha|date:"d/m/Y H:i" }} · {{ item.tipo_label }}</div>
+                    </div>
+                    <div class="act-monto {{ item.tipo }}">
+                        {% if item.tipo == 'egr' or item.tipo == 'comp' %}-{% endif %}${{ item.monto|floatformat:2 }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-tip">
+                    <i class="bi bi-inbox"></i>
+                    Sin actividad reciente
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Bottom row ── -->
+    <div class="bottom-row">
+
+        <!-- Stock bajo -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title"><i class="bi bi-exclamation-triangle-fill" style="color:#f7971e;"></i> Stock bajo</div>
+                <a href="{% url 'inventario' %}" class="card-link">Gestionar <i class="bi bi-arrow-right"></i></a>
+            </div>
+            {% if stock_bajo %}
+            <div style="padding-bottom: 6px;">
+                {% for prod in stock_bajo %}
+                <div class="stock-item">
+                    <div class="stock-bar-wrap">
+                        <div class="stock-nombre">{{ prod.nombre }}</div>
+                        <div class="stock-track">
+                            <div class="stock-fill {% if prod.stock_pct < 20 %}low{% elif prod.stock_pct < 50 %}medium{% else %}ok{% endif %}"
+                                 style="width: 0%;"
+                                 data-w="{{ prod.stock_pct }}"></div>
+                        </div>
+                    </div>
+                    <div class="stock-qty {% if prod.stock_pct < 20 %}low{% elif prod.stock_pct < 50 %}medium{% endif %}">
+                        {{ prod.stock }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-tip">
+                <i class="bi bi-check-circle-fill" style="color:#43e97b; opacity:1;"></i>
+                Todo el stock está en orden
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Resumen del mes -->
+        <div class="card">
+            <div class="card-head">
+                <div class="card-title"><i class="bi bi-calendar-month-fill" style="color:#667eea;"></i> Resumen del mes</div>
+                <a href="{% url 'graficas' %}" class="card-link">Detalle <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div style="padding: 0 22px 20px; display:flex; flex-direction:column; gap:12px;">
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:13px 16px; background:#f0f2ff; border-radius:10px;">
+                    <span style="font-size:0.82rem; font-weight:600; color:#667eea; display:flex; align-items:center; gap:7px;">
+                        <i class="bi bi-arrow-down-circle-fill"></i> Ingresos del mes
+                    </span>
+                    <span style="font-size:1.1rem; font-weight:800; color:#2c3e50;">${{ ingresos_mes|floatformat:2 }}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:13px 16px; background:#fff0f2; border-radius:10px;">
+                    <span style="font-size:0.82rem; font-weight:600; color:#f5576c; display:flex; align-items:center; gap:7px;">
+                        <i class="bi bi-arrow-up-circle-fill"></i> Egresos del mes
+                    </span>
+                    <span style="font-size:1.1rem; font-weight:800; color:#2c3e50;">${{ egresos_mes|floatformat:2 }}</span>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:13px 16px;
+                            background:{% if balance_mes >= 0 %}#e8fff3{% else %}#fff0f2{% endif %};
+                            border-radius:10px;">
+                    <span style="font-size:0.82rem; font-weight:600;
+                                 color:{% if balance_mes >= 0 %}#2e7d32{% else %}#c62828{% endif %};
+                                 display:flex; align-items:center; gap:7px;">
+                        <i class="bi bi-wallet2"></i> Balance
+                    </span>
+                    <span style="font-size:1.1rem; font-weight:800;
+                                 color:{% if balance_mes >= 0 %}#2e7d32{% else %}#c62828{% endif %};">
+                        {% if balance_mes < 0 %}-${{ balance_mes|floatformat:2|slice:"1:" }}{% else %}${{ balance_mes|floatformat:2 }}{% endif %}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── Saludo dinámico ──
+(function() {
+    const h = new Date().getHours();
+    const greet = h < 12 ? 'Buenos días 👋' : h < 19 ? 'Buenas tardes 👋' : 'Buenas noches 👋';
+    document.getElementById('greetingTitle').textContent = greet;
+    const d = new Date();
+    const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+    document.getElementById('greetingDate').textContent = d.toLocaleDateString('es-MX', opts);
+})();
+
+// ── Mini gráfica ──
+const miniCtx = document.getElementById('miniChart').getContext('2d');
+const miniLabels = {{ labels_7d_json|safe }};
+const miniData   = {{ data_7d_json|safe }};
+
+const grad = miniCtx.createLinearGradient(0, 0, 0, 130);
+grad.addColorStop(0, 'rgba(102,126,234,0.35)');
+grad.addColorStop(1, 'rgba(102,126,234,0)');
+
+new Chart(miniCtx, {
+    type: 'line',
+    data: {
+        labels: miniLabels,
+        datasets: [{
+            data: miniData,
+            borderColor: '#667eea',
+            backgroundColor: grad,
+            borderWidth: 2.5,
+            pointBackgroundColor: '#667eea',
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            tension: 0.4,
+            fill: true,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1a1a2e',
+                titleColor: '#fff',
+                bodyColor: '#adb5bd',
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: { label: ctx => ' $' + ctx.parsed.y.toLocaleString('es-MX', {minimumFractionDigits:2}) }
+            }
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+            y: { grid: { color: '#f5f5f5' }, ticks: { font: { size: 10 }, callback: v => '$' + v.toLocaleString('es-MX') } }
+        }
+    }
+});
+
+// ── Animación barras stock ──
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        document.querySelectorAll('.stock-fill').forEach(el => {
+            el.style.width = (el.dataset.w || 0) + '%';
+        });
+    }, 400);
+});
+</script>
 {% endblock %}

@@ -813,6 +813,16 @@
             </li>
             {% endif %}
 
+            <!-- Inventario - ADMIN -->
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
+            <li>
+                <a href="{% url 'inventario' %}">
+                <i class="bi bi-box-seam"></i>
+                    <span class="menu-text">Inventario</span>
+                </a>
+            </li>
+            {% endif %}
+
             <!-- Gráficas - ADMIN -->
             {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
@@ -843,14 +853,6 @@
             </li>
             {% endif %}
 
-            <!-- Ayuda - Todos -->
-            <li>
-                <a href="/ayuda/">
-                    <i class="bi bi-question-circle"></i>
-                    <span class="menu-text">Ayuda</span>
-                </a>
-            </li>
-        </ul>
     </nav>
 
     <!-- Main Content -->

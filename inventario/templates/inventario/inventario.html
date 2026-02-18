@@ -1,0 +1,549 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.4rem;
+    }
+
+    /* ── KPIs ── */
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+
+    .kpi-ico {
+        width: 46px; height: 46px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .kpi-ico.purple { background: #f0f2ff; color: #667eea; }
+    .kpi-ico.blue   { background: #e8f6ff; color: #4facfe; }
+    .kpi-ico.orange { background: #fffbe8; color: #f7971e; }
+    .kpi-ico.red    { background: #fff0f2; color: #f5576c; }
+
+    .kpi-info .kpi-label { font-size: 0.72rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.6px; }
+    .kpi-info .kpi-val   { font-size: 1.55rem; font-weight: 800; color: #2c3e50; line-height: 1.1; }
+
+    /* ── Filtros ── */
+    .filtros-bar {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .filtro-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 150px; }
+    .filtro-group label { font-size: 0.72rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .filtro-input, .filtro-select {
+        padding: 9px 13px;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-size: 0.87rem;
+        color: #2c3e50;
+        background: white;
+        transition: border-color 0.2s;
+        outline: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .filtro-input:focus, .filtro-select:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+    .btn-filtrar {
+        padding: 9px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.87rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+    }
+
+    .btn-filtrar:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.35); }
+
+    .btn-limpiar {
+        padding: 9px 14px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.87rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        text-decoration: none;
+        align-self: flex-end;
+        white-space: nowrap;
+    }
+
+    .btn-limpiar:hover { background: #f8f9fa; border-color: #adb5bd; }
+
+    /* ── Chips de filtro activo ── */
+    .stock-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-self: flex-end;
+    }
+
+    .chip {
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .chip:hover { border-color: #667eea; color: #667eea; }
+    .chip.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; }
+    .chip.active-orange { background: linear-gradient(135deg, #f7971e, #ffd200); color: white; border-color: transparent; }
+    .chip.active-red    { background: linear-gradient(135deg, #f5576c, #f093fb); color: white; border-color: transparent; }
+    .chip.active-green  { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #155724; border-color: transparent; }
+
+    /* ── Grid de productos ── */
+    .main-layout {
+        display: grid;
+        grid-template-columns: 1fr 290px;
+        gap: 20px;
+    }
+
+    .productos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+    }
+
+    .prod-card {
+        background: white;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+
+    .prod-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(102,126,234,0.13);
+        color: inherit;
+    }
+
+    .prod-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+
+    .prod-card.ok::before     { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+    .prod-card.bajo::before   { background: linear-gradient(90deg, #f7971e, #ffd200); }
+    .prod-card.agotado::before{ background: linear-gradient(90deg, #f5576c, #f093fb); }
+
+    .prod-nombre {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .prod-precio {
+        font-size: 0.78rem;
+        color: #adb5bd;
+        margin-bottom: 14px;
+    }
+
+    .prod-stock-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 8px;
+    }
+
+    .prod-stock-label { font-size: 0.7rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; }
+
+    .prod-stock-val {
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .prod-stock-val.ok     { color: #2e7d32; }
+    .prod-stock-val.bajo   { color: #e65100; }
+    .prod-stock-val.agotado{ color: #c62828; }
+
+    .prod-bar-track {
+        height: 5px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+
+    .prod-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+    }
+
+    .prod-bar-fill.ok     { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+    .prod-bar-fill.bajo   { background: linear-gradient(90deg, #f7971e, #ffd200); }
+    .prod-bar-fill.agotado{ background: linear-gradient(90deg, #f5576c, #f093fb); }
+
+    .prod-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        color: #adb5bd;
+    }
+
+    .prod-lotes-badge {
+        background: #f0f2ff;
+        color: #667eea;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .stock-badge {
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    .stock-badge.ok     { background: #e8fff3; color: #2e7d32; }
+    .stock-badge.bajo   { background: #fffbe8; color: #e65100; }
+    .stock-badge.agotado{ background: #fff0f2; color: #c62828; }
+
+    /* ── Sidebar: lotes recientes ── */
+    .sidebar-card {
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+        position: sticky;
+        top: 20px;
+    }
+
+    .sidebar-head {
+        padding: 16px 18px 14px;
+        border-bottom: 2px solid #f0f0f0;
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-head i { color: #667eea; }
+
+    .lote-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 11px 18px;
+        border-bottom: 1px solid #f8f9fa;
+        transition: background 0.15s;
+    }
+
+    .lote-item:last-child { border-bottom: none; }
+    .lote-item:hover { background: #fafbff; }
+
+    .lote-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .lote-prod { font-size: 0.83rem; font-weight: 600; color: #2c3e50; }
+    .lote-cant {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #2e7d32;
+        background: #e8fff3;
+        padding: 2px 8px;
+        border-radius: 20px;
+    }
+
+    .lote-cod  { font-size: 0.7rem; color: #adb5bd; font-family: monospace; }
+    .lote-fecha{ font-size: 0.7rem; color: #adb5bd; }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #adb5bd;
+    }
+
+    .empty-state i { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.35; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+        .main-layout { grid-template-columns: 1fr; }
+        .sidebar-card { position: static; }
+    }
+
+    @media (max-width: 768px) {
+        .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .page-header h2 { font-size: 1.2rem; }
+        .productos-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+        .kpi-row { grid-template-columns: 1fr 1fr; }
+        .productos-grid { grid-template-columns: 1fr 1fr; }
+        .stock-chips { width: 100%; }
+        .filtros-bar { flex-direction: column; }
+        .filtro-group { min-width: unset; }
+    }
+
+    @media (max-width: 360px) {
+        .productos-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- ── Header ── -->
+    <div class="page-header">
+        <h2><i class="bi bi-boxes"></i> Inventario</h2>
+        <a href="{% url 'nueva_compra' %}" style="
+            padding: 9px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.2s;
+        ">
+            <i class="bi bi-plus-circle-fill"></i> Nueva Compra
+        </a>
+    </div>
+
+    <!-- ── KPIs ── -->
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-ico purple"><i class="bi bi-box-seam-fill"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Productos</div>
+                <div class="kpi-val">{{ total_productos }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico blue"><i class="bi bi-stack"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Unidades totales</div>
+                <div class="kpi-val">{{ total_stock }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico orange"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Stock bajo</div>
+                <div class="kpi-val">{{ bajo_stock }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico red"><i class="bi bi-x-circle-fill"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Agotados</div>
+                <div class="kpi-val">{{ agotados }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Filtros ── -->
+    <form method="GET" class="filtros-bar">
+        <div class="filtro-group">
+            <label><i class="bi bi-search"></i> Buscar</label>
+            <input type="text" name="q" value="{{ q }}" class="filtro-input" placeholder="Nombre del producto...">
+        </div>
+
+        <div class="filtro-group" style="max-width:170px;">
+            <label><i class="bi bi-sort-down"></i> Ordenar</label>
+            <select name="orden" class="filtro-select">
+                <option value="nombre"     {% if orden == 'nombre'     %}selected{% endif %}>Nombre A-Z</option>
+                <option value="stock_asc"  {% if orden == 'stock_asc'  %}selected{% endif %}>Stock ↑</option>
+                <option value="stock_desc" {% if orden == 'stock_desc' %}selected{% endif %}>Stock ↓</option>
+                <option value="precio"     {% if orden == 'precio'     %}selected{% endif %}>Precio ↓</option>
+            </select>
+        </div>
+
+        <!-- Chips de nivel de stock -->
+        <div style="display:flex; flex-direction:column; gap:5px; align-self:flex-end;">
+            <label style="font-size:0.72rem; font-weight:700; color:#6c757d; text-transform:uppercase; letter-spacing:0.5px;">Stock</label>
+            <div class="stock-chips">
+                <a href="?q={{ q }}&orden={{ orden }}&stock=todos"
+                   class="chip {% if stock_fil == 'todos' %}active{% endif %}">Todos</a>
+                <a href="?q={{ q }}&orden={{ orden }}&stock=ok"
+                   class="chip {% if stock_fil == 'ok' %}active-green{% endif %}">OK</a>
+                <a href="?q={{ q }}&orden={{ orden }}&stock=bajo"
+                   class="chip {% if stock_fil == 'bajo' %}active-orange{% endif %}">Bajo</a>
+                <a href="?q={{ q }}&orden={{ orden }}&stock=agotado"
+                   class="chip {% if stock_fil == 'agotado' %}active-red{% endif %}">Agotado</a>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-filtrar">
+            <i class="bi bi-funnel-fill"></i> Filtrar
+        </button>
+        <a href="{% url 'inventario' %}" class="btn-limpiar">
+            <i class="bi bi-x-lg"></i> Limpiar
+        </a>
+    </form>
+
+    <!-- ── Main layout ── -->
+    <div class="main-layout">
+
+        <!-- Grid de productos -->
+        <div>
+            {% if productos %}
+            <div class="productos-grid" id="prodGrid">
+                {% for prod in productos %}
+                <a href="{% url 'detalle_producto' prod.id %}" class="prod-card {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
+
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2px;">
+                        <div class="prod-nombre" title="{{ prod.nombre }}">{{ prod.nombre }}</div>
+                        <span class="stock-badge {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
+                            {% if prod.stock == 0 %}Agotado{% elif prod.stock <= 10 %}Stock bajo{% else %}En stock{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="prod-precio">${{ prod.precio_venta|floatformat:2 }} por unidad</div>
+
+                    <div class="prod-stock-row">
+                        <span class="prod-stock-label">Unidades</span>
+                        <span class="prod-stock-val {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
+                            {{ prod.stock }}
+                        </span>
+                    </div>
+
+                    <div class="prod-bar-track">
+                        <div class="prod-bar-fill {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}"
+                             style="width: {% if prod.stock > 100 %}100{% else %}{{ prod.stock }}{% endif %}%;">
+                        </div>
+                    </div>
+
+                    <div class="prod-footer">
+                        <span><i class="bi bi-layers"></i> {{ prod.num_lotes|default:0 }} lote{{ prod.num_lotes|default:0|pluralize }}</span>
+                        <span class="prod-lotes-badge"><i class="bi bi-arrow-right-short"></i> Ver detalle</span>
+                    </div>
+
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="background:white; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                <div class="empty-state">
+                    <i class="bi bi-box-seam"></i>
+                    <p style="margin:0; font-size:0.95rem;">
+                        No se encontraron productos{% if q %} para "<strong>{{ q }}</strong>"{% endif %}.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar: lotes recientes -->
+        <div class="sidebar-card">
+            <div class="sidebar-head">
+                <i class="bi bi-clock-history"></i> Lotes recientes
+            </div>
+            {% if lotes_recientes %}
+            {% for lote in lotes_recientes %}
+            <div class="lote-item">
+                <div class="lote-top">
+                    <span class="lote-prod">{{ lote.producto.nombre }}</span>
+                    <span class="lote-cant">+{{ lote.cantidad }}</span>
+                </div>
+                <span class="lote-cod">{{ lote.lote }}</span>
+                <span class="lote-fecha"><i class="bi bi-calendar3"></i> {{ lote.fecha_creacion|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state" style="padding:30px 20px;">
+                <i class="bi bi-inbox"></i>
+                <p style="margin:0; font-size:0.85rem;">Sin lotes registrados</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

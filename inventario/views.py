@@ -14,8 +14,13 @@ from io import BytesIO
 from datetime import date, datetime, timedelta
 from django.db import transaction
 from decimal import Decimal
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count
+from django.utils import timezone
 
-
+from negocios.utils import get_negocio_activo
+from inventario.models import Producto, Lote   
 @login_required
 def nueva_compra(request):
     negocio = get_negocio_activo(request)
@@ -372,3 +377,89 @@ def toggle_egreso_fijo(request, egreso_id):
     egreso.save()
     return redirect("egresos_fijos")
 
+
+
+
+@login_required
+def inventario(request):
+    negocio = get_negocio_activo(request)
+
+    # ── Filtros ──
+    q          = request.GET.get("q", "").strip()
+    orden      = request.GET.get("orden", "nombre")   # nombre | stock_asc | stock_desc | precio
+    stock_fil  = request.GET.get("stock", "todos")    # todos | bajo | agotado | ok
+
+    productos = Producto.objects.filter(negocio=negocio)
+
+    # Búsqueda por nombre
+    if q:
+        productos = productos.filter(nombre__icontains=q)
+
+    # Filtro por nivel de stock
+    if stock_fil == "bajo":
+        productos = productos.filter(stock__gt=0, stock__lte=10)
+    elif stock_fil == "agotado":
+        productos = productos.filter(stock=0)
+    elif stock_fil == "ok":
+        productos = productos.filter(stock__gt=10)
+
+    # Ordenamiento
+    orden_map = {
+        "nombre":     "nombre",
+        "stock_asc":  "stock",
+        "stock_desc": "-stock",
+        "precio":     "-precio_venta",
+    }
+    productos = productos.order_by(orden_map.get(orden, "nombre"))
+
+    # Anotar lotes por producto
+    productos = productos.annotate(
+        num_lotes=Count("lotes"),
+        valor_inventario=Sum("lotes__precio_compra")  # suma precios de compra de lotes
+    )
+
+    # ── KPIs ──
+    total_productos   = Producto.objects.filter(negocio=negocio).count()
+    total_stock       = Producto.objects.filter(negocio=negocio).aggregate(t=Sum("stock"))["t"] or 0
+    bajo_stock        = Producto.objects.filter(negocio=negocio, stock__gt=0, stock__lte=10).count()
+    agotados          = Producto.objects.filter(negocio=negocio, stock=0).count()
+
+    # ── Lotes recientes (últimos 8) ──
+    lotes_recientes = (
+        Lote.objects
+        .filter(negocio=negocio)
+        .select_related("producto")
+        .order_by("-fecha_creacion")[:8]
+    )
+
+    context = {
+        "productos":       productos,
+        "lotes_recientes": lotes_recientes,
+
+        # Filtros activos
+        "q":           q,
+        "orden":       orden,
+        "stock_fil":   stock_fil,
+
+        # KPIs
+        "total_productos": total_productos,
+        "total_stock":     total_stock,
+        "bajo_stock":      bajo_stock,
+        "agotados":        agotados,
+    }
+
+    return render(request, "inventario/inventario.html", context)
+
+
+@login_required
+def detalle_producto(request, producto_id):
+    """Vista de lotes de un producto específico."""
+    negocio = get_negocio_activo(request)
+    producto = get_object_or_404(Producto, id=producto_id, negocio=negocio)
+    lotes    = Lote.objects.filter(producto=producto, negocio=negocio).order_by("-fecha_creacion")
+
+    context = {
+        "producto": producto,
+        "lotes":    lotes,
+    }
+    return render(request, "inventario/detalle_producto.html", context)
