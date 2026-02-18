@@ -11,42 +11,47 @@ def crear_producto(request):
     negocio = get_negocio_activo(request)
     rol = get_rol_usuario(request)
 
-
     if not negocio:
         return redirect("dashboard")
 
-    # 🔐 Solo ADMIN puede crear
     if rol != "ADMIN":
         return redirect("lista_productos")
-    
 
     if request.method == "POST":
         nombre = request.POST.get("nombre")
         proveedor_id = request.POST.get("proveedor")
-        precio_compra = request.POST.get("precio_compra")
-        precio_venta = request.POST.get("precio_venta")
-        stock = request.POST.get("stock")
-        stock_minimo = request.POST.get("stock_minimo")
-        if stock_minimo == "":
-            stock_minimo = -1
-        stock_maximo = request.POST.get("stock_maximo")
-        if stock_maximo == "":
-            stock_maximo = -1
 
-        proveedor = Proveedor.objects.get(id=proveedor_id)
+        precio_venta = float(request.POST.get("precio_venta"))
+
+        stock_minimo = request.POST.get("stock_minimo")
+        stock_minimo = int(stock_minimo) if stock_minimo else -1
+
+        stock_maximo = request.POST.get("stock_maximo")
+        stock_maximo = int(stock_maximo) if stock_maximo else -1
+
+        proveedor = get_object_or_404(
+            Proveedor,
+            id=proveedor_id,
+            negocio=negocio
+        )
 
         Producto.objects.create(
             negocio=negocio,
             nombre=nombre,
             proveedor=proveedor,
             precio_venta=precio_venta,
-            stock=stock,
+            stock=0,
             stock_minimo=stock_minimo,
             stock_maximo=stock_maximo,
         )
-        return redirect("lista_productos") 
 
-    return render(request, "productos/crear_producto.html", {"proveedores": Proveedor.objects.filter(negocio=negocio)})
+        return redirect("lista_productos")
+
+    proveedores = Proveedor.objects.filter(negocio=negocio)
+    return render(request, "productos/crear_producto.html", {
+        "proveedores": proveedores
+    })
+
 
 
 @login_required
