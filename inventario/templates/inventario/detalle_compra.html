@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load l10n %}
 {% block title %}Detalle Compra #{{ compra.id }} - MISHI{% endblock %}
 
 {% block extra_css %}
@@ -614,7 +614,7 @@
                             </div>
                         </td>
                         <td><span class="cantidad-badge">{{ d.cantidad }}</span></td>
-                        <td>${{ d.precio_unitario|floatformat:2 }}</td>
+                        <td>${{ d.precio_compra|floatformat:2 }}</td>
                         <td><span class="total-badge">${{ d.subtotal|floatformat:2 }}</span></td>
                     </tr>
                     {% endfor %}

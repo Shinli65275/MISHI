@@ -11,4 +11,7 @@ urlpatterns = [
     path("egresos/", views.lista_egresos, name="lista_egresos"),
     path("egresos/nuevo/", views.nuevo_egreso, name="nuevo_egreso"),
 
+    path('egresos-fijos/',          views.lista_egresos_fijos,  name='egresos_fijos'),
+    path('egresos-fijos/nuevo/',    views.nuevo_egreso_fijo,    name='nuevo_egreso_fijo'),
+    path('egresos-fijos/toggle/<int:egreso_id>/', views.toggle_egreso_fijo, name='toggle_egreso_fijo'),
 ]

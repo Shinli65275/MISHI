@@ -19,9 +19,11 @@ def crear_producto(request):
 
     if request.method == "POST":
         nombre = request.POST.get("nombre")
+        codigo = request.POST.get("codigo")
         proveedor_id = request.POST.get("proveedor")
 
         precio_venta = float(request.POST.get("precio_venta"))
+        precio_compra = float(request.POST.get("precio_compra"))
 
         stock_minimo = request.POST.get("stock_minimo")
         stock_minimo = int(stock_minimo) if stock_minimo else -1
@@ -35,11 +37,13 @@ def crear_producto(request):
             negocio=negocio
         )
 
-        Producto.objects.create(
+        Producto.objects.create( 
             negocio=negocio,
             nombre=nombre,
+            codigo=codigo,
             proveedor=proveedor,
             precio_venta=precio_venta,
+            precio_compra=precio_compra,
             stock=0,
             stock_minimo=stock_minimo,
             stock_maximo=stock_maximo,

@@ -12,7 +12,7 @@ class UsuarioNegocio(models.Model):
         ('ADMIN', 'Administrador'),
         ('VENDEDOR', 'Vendedor'),
         ('ALMACEN', 'Almacén'),
-        ('AlMACEN-ADMIN', 'Almacén-Admin'),
+        ('ALMACEN_ADMIN', 'Almacén-Admin'),
     ]
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)

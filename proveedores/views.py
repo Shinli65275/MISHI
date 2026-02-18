@@ -14,7 +14,7 @@ def crear_proveedor(request):
         return redirect("dashboard")
 
     # Solo ADMIN puede crear
-    if rol != "ADMIN":
+    if rol != "ADMIN" and rol != "ALMACEN_ADMIN":
         return redirect("lista_proveedores")
 
     if request.method == "POST":

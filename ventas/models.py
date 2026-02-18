@@ -1,6 +1,7 @@
 from django.db import models
 from inventario.models import Producto
-from negocios.models import Negocio  # si lo tienes en otra app
+from negocios.models import Negocio 
+from django.db import transaction
 
 class Venta(models.Model):
 
@@ -28,6 +29,31 @@ class DetalleVenta(models.Model):
 
     def __str__(self):
         return f"{self.producto.nombre} x{self.cantidad}"
+    
+    def restar_stock(self):
+        self.producto.stock -= self.cantidad
+        self.producto.save()
+    
+
+    def restar_lotes(self):
+        cantidad_restante = self.cantidad
+        lotes = self.producto.lotes.filter(stock__gt=0).order_by('fecha_vencimiento')
+
+        for lote in lotes:
+            if cantidad_restante <= 0:
+                break
+
+            if lote.stock >= cantidad_restante:
+                lote.stock -= cantidad_restante
+                lote.save()
+                cantidad_restante = 0
+            else:
+                cantidad_restante -= lote.stock
+                lote.stock = 0
+                lote.save()
+
+        if cantidad_restante > 0:
+            raise ValueError("No hay suficiente stock en los lotes para completar la venta.")
 
 
 class Ingreso(models.Model):

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from MISHI.views import CustomLoginView, inicio, logout_view,nada
-from inventario.views import lista_egresos
+from inventario.views import lista_egresos,lista_egresos_fijos
 urlpatterns = [
     path("", inicio, name="inicio"),
     path("admin/", admin.site.urls),
@@ -15,16 +15,12 @@ urlpatterns = [
     path("inventario/", include("inventario.urls")),
     path("ventas/", include("ventas.urls")),
     path("egresos/", lista_egresos, name="egresos"),
-
+    path("egresos_fijos/", lista_egresos_fijos, name="egresos_fijos"),
+    path("graficas/", include("graficas.urls")),
 
 
     
-    path("movimientos/", nada, name="movimientos"),
-    path("existencias/", nada, name="existencias"),
-    path("ingresos/", nada, name="ingresos"),
-    path("reporegresos_fijostes/", nada, name="egresos_fijos"),
     path("cotizacion/", nada, name="cotizacion"),
-    path("graficas/", nada, name="graficas"),
 
 
 ]

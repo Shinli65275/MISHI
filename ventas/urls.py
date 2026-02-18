@@ -8,6 +8,5 @@ urlpatterns = [
     path("<int:venta_id>/", views.detalle_venta, name="detalle_venta"),
     path("buscar-producto/", views.buscar_producto_codigo, name="buscar_producto_codigo"),
     path("<int:venta_id>/pdf/", views.generar_pdf_venta, name="pdf_venta"),
-
-
+    path("lista_ingresos/", views.lista_ingresos, name="lista_ingresos"),
 ]

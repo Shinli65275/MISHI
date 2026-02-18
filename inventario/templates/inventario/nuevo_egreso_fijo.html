@@ -1,0 +1,610 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Egreso Fijo - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover { background: #667eea; color: white; }
+
+    /* ── Layout ─────────────────────────────────────── */
+    .create-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    /* ── Card ───────────────────────────────────────── */
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .form-card h5 {
+        color: #2c3e50;
+        margin: 0 0 25px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        color: #2c3e50;
+        width: 100%;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control::placeholder { color: #adb5bd; }
+
+    /* Prefijo $ */
+    .input-prefix-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-prefix {
+        position: absolute;
+        left: 14px;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 1rem;
+        pointer-events: none;
+    }
+
+    .input-prefix-wrapper .form-control { padding-left: 30px; }
+
+    .field-hint {
+        font-size: 0.78rem;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: -2px;
+    }
+
+    .section-divider {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #adb5bd;
+        margin: 24px 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #f0f0f0;
+    }
+
+    /* ── Toggle activo ──────────────────────────────── */
+    .toggle-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        cursor: pointer;
+        transition: all 0.25s;
+        user-select: none;
+    }
+
+    .toggle-wrapper:hover {
+        border-color: #667eea;
+        background: #f0f2ff;
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+    .toggle-track {
+        position: absolute;
+        inset: 0;
+        background: #dee2e6;
+        border-radius: 24px;
+        transition: background 0.3s;
+        cursor: pointer;
+    }
+
+    .toggle-track::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+        background: linear-gradient(135deg, #43e97b, #38f9d7);
+    }
+
+    .toggle-switch input:checked + .toggle-track::before {
+        transform: translateX(20px);
+    }
+
+    .toggle-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .toggle-label strong {
+        font-size: 0.92rem;
+        color: #2c3e50;
+    }
+
+    .toggle-label span {
+        font-size: 0.78rem;
+        color: #adb5bd;
+    }
+
+    /* ── Chips de categoría ─────────────────────────── */
+    .chip-hint { font-size: 0.8rem; color: #adb5bd; margin-bottom: 2px; }
+
+    .categoria-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .chip {
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        user-select: none;
+    }
+
+    .chip:hover { transform: translateY(-1px); }
+    .chip.selected { box-shadow: 0 3px 8px rgba(0,0,0,0.15); transform: translateY(-1px); }
+
+    .chip.c0 { background:#e3f2fd; color:#1565c0; border-color:#bbdefb; }
+    .chip.c1 { background:#fce4ec; color:#880e4f; border-color:#f8bbd0; }
+    .chip.c2 { background:#e8f5e9; color:#2e7d32; border-color:#c8e6c9; }
+    .chip.c3 { background:#fff3e0; color:#e65100; border-color:#ffe0b2; }
+    .chip.c4 { background:#f3e5f5; color:#6a1b9a; border-color:#e1bee7; }
+    .chip.c5 { background:#e0f7fa; color:#006064; border-color:#b2ebf2; }
+    .chip.c6 { background:#fff8e1; color:#f57f17; border-color:#ffecb3; }
+    .chip.c7 { background:#fbe9e7; color:#bf360c; border-color:#ffccbc; }
+
+    /* ── Botones ────────────────────────────────────── */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 10px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        padding: 13px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ── Sidebar ────────────────────────────────────── */
+    .sidebar-card {
+        background: white;
+        border-radius: 15px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+    .sidebar-card h6 {
+        color: #2c3e50;
+        margin: 0 0 18px 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* Preview */
+    .preview-box {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .preview-icon-wrap {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.6rem;
+    }
+
+    .preview-desc {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        word-break: break-word;
+    }
+
+    .preview-monto {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .preview-status {
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .preview-status.activo   { background: #e8f5e9; color: #2e7d32; }
+    .preview-status.inactivo { background: #f0f0f0; color: #6c757d; }
+
+    /* Tips */
+    .tip-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #6c757d;
+        line-height: 1.4;
+    }
+
+    .tip-item i { color: #667eea; margin-top: 1px; flex-shrink: 0; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 992px) {
+        .create-layout { grid-template-columns: 1fr; }
+        .sidebar-card { position: static; }
+    }
+
+    @media (max-width: 768px) {
+        .page-header { padding: 20px; }
+        .page-header h2 { font-size: 1.4rem; }
+        .btn-back { width: 100%; justify-content: center; }
+        .form-card { padding: 22px; }
+        .form-actions { flex-direction: column-reverse; }
+        .btn-submit, .btn-back { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-plus-circle"></i>
+            Nuevo Egreso Fijo
+        </h2>
+        <a href="{% url 'egresos_fijos' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="create-layout">
+
+        <!-- ── Formulario ── -->
+        <div class="form-card">
+            <h5>
+                <i class="bi bi-calendar-check"></i>
+                Datos del Egreso Fijo
+            </h5>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Descripción -->
+                <div class="form-group">
+                    <label for="descripcion">
+                        <i class="bi bi-card-text"></i>
+                        Descripción <span style="color:#dc3545;">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="descripcion"
+                        name="descripcion"
+                        class="form-control"
+                        placeholder="Ej: Renta del local, Servicio de internet..."
+                        required
+                        autofocus
+                        oninput="actualizarPreview()"
+                    >
+                </div>
+
+                <div class="section-divider">Monto</div>
+
+                <!-- Monto -->
+                <div class="form-group">
+                    <label for="monto">
+                        <i class="bi bi-cash"></i>
+                        Monto Mensual <span style="color:#dc3545;">*</span>
+                    </label>
+                    <div class="input-prefix-wrapper">
+                        <span class="input-prefix">$</span>
+                        <input
+                            type="number"
+                            id="monto"
+                            name="monto"
+                            class="form-control"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="0.00"
+                            required
+                            oninput="actualizarPreview()"
+                        >
+                    </div>
+                    <span class="field-hint">
+                        <i class="bi bi-info-circle"></i>
+                        Monto que se repite cada mes
+                    </span>
+                </div>
+
+                <div class="section-divider">Categoría</div>
+
+                <!-- Categoría -->
+                <div class="form-group">
+                    <label for="categoria">
+                        <i class="bi bi-tag"></i>
+                        Categoría
+                    </label>
+                    <input
+                        type="text"
+                        id="categoria"
+                        name="categoria"
+                        class="form-control"
+                        placeholder="Ej: Renta, Servicios, Nómina..."
+                    >
+                    <p class="chip-hint">Sugerencias rápidas:</p>
+                    <div class="categoria-chips">
+                        <span class="chip c0" onclick="setCategoria('Renta')">🏠 Renta</span>
+                        <span class="chip c2" onclick="setCategoria('Servicios')">💡 Servicios</span>
+                        <span class="chip c1" onclick="setCategoria('Nómina')">👥 Nómina</span>
+                        <span class="chip c3" onclick="setCategoria('Seguros')">🛡️ Seguros</span>
+                        <span class="chip c4" onclick="setCategoria('Créditos')">💳 Créditos</span>
+                        <span class="chip c5" onclick="setCategoria('Suscripciones')">📱 Suscripciones</span>
+                        <span class="chip c6" onclick="setCategoria('Mantenimiento')">🔧 Mantenimiento</span>
+                        {% for cat in categorias_existentes %}
+                        <span class="chip c7" onclick="setCategoria('{{ cat }}')">{{ cat }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="section-divider">Estado</div>
+
+                <!-- Toggle activo -->
+                <label class="toggle-wrapper" for="activo">
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="activo" name="activo" checked onchange="actualizarPreview()">
+                        <div class="toggle-track"></div>
+                    </div>
+                    <div class="toggle-label">
+                        <strong>Egreso activo</strong>
+                        <span>Los egresos activos cuentan en el total mensual</span>
+                    </div>
+                </label>
+
+                <!-- Acciones -->
+                <div class="form-actions">
+                    <a href="{% url 'egresos_fijos' %}" class="btn-back">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar Egreso Fijo
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Sidebar ── -->
+        <div class="sidebar-card">
+            <h6><i class="bi bi-eye"></i> Vista Previa</h6>
+
+            <div class="preview-box">
+                <div class="preview-desc" id="previewDesc">Descripción del egreso</div>
+                <div class="preview-monto" id="previewMonto">$0.00</div>
+                <span class="preview-status activo" id="previewStatus">
+                    <i class="bi bi-check-circle-fill"></i> Activo
+                </span>
+            </div>
+
+            <div class="tip-list">
+                <div class="tip-item">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Los egresos fijos representan compromisos que se repiten cada mes.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-toggle-on"></i>
+                    <span>Puedes desactivarlos temporalmente sin eliminarlos desde la lista.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-bar-chart"></i>
+                    <span>El total activo mensual te ayuda a conocer tu punto de equilibrio.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function actualizarPreview() {
+        const desc  = document.getElementById('descripcion').value.trim();
+        const monto = parseFloat(document.getElementById('monto').value);
+        const activo = document.getElementById('activo').checked;
+
+        document.getElementById('previewDesc').textContent =
+            desc || 'Descripción del egreso';
+
+        document.getElementById('previewMonto').textContent =
+            isNaN(monto) ? '$0.00' : '$' + monto.toFixed(2);
+
+        const status = document.getElementById('previewStatus');
+        if (activo) {
+            status.className = 'preview-status activo';
+            status.innerHTML = '<i class="bi bi-check-circle-fill"></i> Activo';
+        } else {
+            status.className = 'preview-status inactivo';
+            status.innerHTML = '<i class="bi bi-pause-circle-fill"></i> Inactivo';
+        }
+    }
+
+    function setCategoria(nombre) {
+        const input = document.getElementById('categoria');
+        const chips = document.querySelectorAll('.chip');
+        if (input.value === nombre) {
+            input.value = '';
+            chips.forEach(c => c.classList.remove('selected'));
+            return;
+        }
+        input.value = nombre;
+        chips.forEach(c => {
+            c.classList.toggle('selected', c.textContent.trim().includes(nombre));
+        });
+    }
+
+    document.getElementById('categoria').addEventListener('input', function () {
+        const val = this.value.trim();
+        document.querySelectorAll('.chip').forEach(c => {
+            c.classList.toggle('selected', val !== '' && c.textContent.trim().includes(val));
+        });
+    });
+</script>
+{% endblock %}

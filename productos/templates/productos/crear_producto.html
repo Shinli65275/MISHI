@@ -4,6 +4,7 @@
 
 {% block extra_css %}
 <style>
+
     .page-header {
         background: white;
         border-radius: 15px;
@@ -386,8 +387,26 @@
                         oninput="actualizarPreview()"
                     >
                 </div>
+                <div class="form-group">
+                    <label for="codigo">
+                        <i class="bi bi-upc-scan"></i>
+                        Código / Barcode
+                    </label>
+                    <input
+                        type="text"
+                        id="codigo"
+                        name="codigo"
+                        class="form-control"
+                        value="{{ producto.codigo }}"
+                        placeholder="Ej: 7501234567890"
+                    >
+                    <span class="field-hint">
+                        <i class="bi bi-info-circle"></i>
+                        Código de barras o referencia interna
+                    </span>
+                </div>
 
-                <div class="section-divider">Precio y Stock inicial</div>
+                <div class="section-divider">Precio de compra y venta</div>
 
                 <div class="form-row">
                     <!-- Precio venta -->
@@ -402,6 +421,24 @@
                                 type="number"
                                 id="precio_venta"
                                 name="precio_venta"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                required
+                                oninput="actualizarPreview()"
+                            >
+                        </div>
+                        <label for="precio_compra">
+                            <i class="bi bi-tag"></i>
+                            Precio de Compra <span style="color:#dc3545;">*</span>
+                        </label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input
+                                type="number"
+                                id="precio_compra"
+                                name="precio_compra"
                                 class="form-control"
                                 step="0.01"
                                 min="0"
@@ -432,12 +469,17 @@
                         <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
                         {% endfor %}
                     </select>
+
+        <a href="{% url 'crear_proveedor' %}" class="btn-add">
+            <i class="bi bi-plus-circle"></i>
+            Nuevo Proveedor
+        </a>
                 </div>
                 <!-- Control -->
                 <div class="form-group">
                                                 <label for="stock">
                             <i class="bi bi-layers"></i>
-                            Stock Inicial 
+                            Stock Minimo 
                         </label>
                         <input
                             type="number"
@@ -482,7 +524,6 @@
             </form>
         </div>
 
-        <!-- ── Sidebar ── -->
         <div class="sidebar-card">
             <h6>
                 <i class="bi bi-eye"></i>
@@ -491,9 +532,7 @@
 
             <!-- Preview en vivo -->
             <div class="product-preview">
-                <div class="preview-icon" id="previewIcon">
-                    <i class="bi bi-box"></i>
-                </div>
+
                 <div class="preview-name" id="previewNombre">Nombre del producto</div>
                 <div class="preview-precio" id="previewPrecio">$0.00</div>
                 <div class="preview-proveedor" id="previewProveedor">
@@ -506,11 +545,12 @@
                 </span>
             </div>
 
+
             <!-- Tips -->
             <div class="tip-list">
                 <div class="tip-item">
                     <i class="bi bi-lightbulb"></i>
-                    <span>El stock inicial solo se define al crear. Después se gestiona desde las compras.</span>
+                    <span>El stock minimo solo se define al crear. Después se gestiona desde las compras.</span>
                 </div>
                 <div class="tip-item">
                     <i class="bi bi-shield-check"></i>

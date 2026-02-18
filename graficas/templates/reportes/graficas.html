@@ -1,0 +1,787 @@
+{% extends 'base.html' %}
+
+{% block title %}Gráficas & Reporte - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Layout ── */
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.4rem;
+    }
+
+    /* ── Selector de periodo ── */
+    .periodo-form {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .periodo-form label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .periodo-select {
+        padding: 8px 14px;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-size: 0.88rem;
+        color: #2c3e50;
+        background: white;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        outline: none;
+    }
+
+    .periodo-select:focus { border-color: #667eea; }
+
+    .btn-periodo {
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-periodo:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.35); }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+
+    .kpi-card.ing::before  { background: linear-gradient(90deg, #667eea, #764ba2); }
+    .kpi-card.egr::before  { background: linear-gradient(90deg, #f093fb, #f5576c); }
+    .kpi-card.bal::before  { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+    .kpi-card.vta::before  { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+    .kpi-card.tkt::before  { background: linear-gradient(90deg, #fa709a, #fee140); }
+
+    .kpi-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #adb5bd;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .kpi-value {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: #2c3e50;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+
+    .kpi-value.positive { color: #2e7d32; }
+    .kpi-value.negative { color: #c62828; }
+
+    .kpi-sub {
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .kpi-sub.up   { color: #2e7d32; }
+    .kpi-sub.down { color: #c62828; }
+    .kpi-sub.neutral { color: #adb5bd; }
+
+    /* ── Cards de gráficas ── */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+        margin-bottom: 25px;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .chart-card.full { grid-column: 1 / -1; }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .chart-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+    }
+
+    .chart-subtitle {
+        font-size: 0.75rem;
+        color: #adb5bd;
+        margin-top: 3px;
+    }
+
+    .chart-legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+    }
+
+    .chart-wrap { position: relative; }
+
+    /* ── Reporte del mes ── */
+    .reporte-grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 22px;
+        margin-bottom: 25px;
+    }
+
+    .reporte-card {
+        background: white;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .reporte-titulo {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 18px 0;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Tabla de top conceptos */
+    .top-table { width: 100%; border-collapse: collapse; }
+
+    .top-table thead th {
+        padding: 9px 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #adb5bd;
+        text-align: left;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .top-table thead th:last-child { text-align: right; }
+
+    .top-table tbody tr { border-bottom: 1px solid #f8f9fa; transition: background 0.15s; }
+    .top-table tbody tr:hover { background: #f8f9fa; }
+    .top-table tbody tr:last-child { border-bottom: none; }
+
+    .top-table tbody td {
+        padding: 11px 12px;
+        font-size: 0.86rem;
+        color: #495057;
+        vertical-align: middle;
+    }
+
+    .top-table tbody td:last-child { text-align: right; font-weight: 700; color: #2e7d32; }
+
+    .rank-badge {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 8px;
+    }
+
+    .rank-badge.gold   { background: linear-gradient(135deg, #f7971e, #ffd200); }
+    .rank-badge.silver { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
+    .rank-badge.bronze { background: linear-gradient(135deg, #cd7f32, #b8860b); }
+
+    /* Balance visual */
+    .balance-visual {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .bv-row { display: flex; flex-direction: column; gap: 6px; }
+
+    .bv-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .bv-header .bv-label { color: #6c757d; display: flex; align-items: center; gap: 6px; }
+    .bv-header .bv-val   { color: #2c3e50; }
+
+    .bv-bar-track {
+        height: 10px;
+        background: #f0f0f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .bv-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+
+    .bv-bar-fill.ing { background: linear-gradient(90deg, #667eea, #764ba2); }
+    .bv-bar-fill.egr { background: linear-gradient(90deg, #f093fb, #f5576c); }
+
+    .bv-divider {
+        border: none;
+        border-top: 1.5px dashed #e9ecef;
+        margin: 4px 0;
+    }
+
+    .bv-balance {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-radius: 11px;
+        margin-top: 4px;
+    }
+
+    .bv-balance.positive { background: linear-gradient(135deg, #d4edda, #c3e6cb); }
+    .bv-balance.negative { background: linear-gradient(135deg, #f8d7da, #f5c6cb); }
+
+    .bv-balance-label { font-size: 0.82rem; font-weight: 700; }
+    .bv-balance.positive .bv-balance-label { color: #155724; }
+    .bv-balance.negative .bv-balance-label { color: #721c24; }
+
+    .bv-balance-valor { font-size: 1.4rem; font-weight: 800; }
+    .bv-balance.positive .bv-balance-valor { color: #1a7a34; }
+    .bv-balance.negative .bv-balance-valor { color: #a71d2a; }
+
+    .empty-chart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        color: #adb5bd;
+        font-size: 0.9rem;
+        gap: 10px;
+    }
+
+    .empty-chart i { font-size: 2.5rem; opacity: 0.4; }
+
+    @media (max-width: 1024px) {
+        .charts-grid   { grid-template-columns: 1fr; }
+        .chart-card.full { grid-column: 1; }
+        .reporte-grid  { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .kpi-grid { grid-template-columns: 1fr 1fr; }
+        .page-header h2 { font-size: 1.2rem; }
+    }
+
+    @media (max-width: 400px) {
+        .kpi-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- ── Header ── -->
+    <div class="page-header">
+        <h2><i class="bi bi-bar-chart-line-fill"></i> Gráficas & Reporte</h2>
+
+        <form method="GET" class="periodo-form">
+            <label><i class="bi bi-calendar3"></i> Periodo</label>
+            <select name="mes" class="periodo-select">
+                <option value="1"  {% if mes_actual == 1  %}selected{% endif %}>Enero</option>
+                <option value="2"  {% if mes_actual == 2  %}selected{% endif %}>Febrero</option>
+                <option value="3"  {% if mes_actual == 3  %}selected{% endif %}>Marzo</option>
+                <option value="4"  {% if mes_actual == 4  %}selected{% endif %}>Abril</option>
+                <option value="5"  {% if mes_actual == 5  %}selected{% endif %}>Mayo</option>
+                <option value="6"  {% if mes_actual == 6  %}selected{% endif %}>Junio</option>
+                <option value="7"  {% if mes_actual == 7  %}selected{% endif %}>Julio</option>
+                <option value="8"  {% if mes_actual == 8  %}selected{% endif %}>Agosto</option>
+                <option value="9"  {% if mes_actual == 9  %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if mes_actual == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if mes_actual == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if mes_actual == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+            <select name="anio" class="periodo-select">
+                {% for a in anios_disponibles %}
+                    <option value="{{ a }}" {% if anio_actual == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-periodo">
+                <i class="bi bi-arrow-clockwise"></i> Aplicar
+            </button>
+        </form>
+    </div>
+
+    <!-- ── KPIs ── -->
+    <div class="kpi-grid">
+
+        <div class="kpi-card ing">
+            <div class="kpi-label"><i class="bi bi-arrow-down-circle-fill" style="color:#667eea;"></i> Ingresos</div>
+            <div class="kpi-value">${{ total_ingresos_mes|floatformat:2 }}</div>
+            <div class="kpi-sub {% if variacion_ingresos >= 0 %}up{% else %}down{% endif %}">
+                <i class="bi bi-arrow-{% if variacion_ingresos >= 0 %}up{% else %}down{% endif %}-short"></i>
+                {{ variacion_ingresos|floatformat:1 }}% vs mes anterior
+            </div>
+        </div>
+
+        <div class="kpi-card egr">
+            <div class="kpi-label"><i class="bi bi-arrow-up-circle-fill" style="color:#f5576c;"></i> Egresos</div>
+            <div class="kpi-value">${{ total_egresos_mes|floatformat:2 }}</div>
+            <div class="kpi-sub neutral"><i class="bi bi-dash"></i> {{ nombre_mes }} {{ anio_actual }}</div>
+        </div>
+
+        <div class="kpi-card bal">
+            <div class="kpi-label"><i class="bi bi-wallet2" style="color:#43e97b;"></i> Balance</div>
+            <div class="kpi-value {% if balance_mes >= 0 %}positive{% else %}negative{% endif %}">
+                {% if balance_mes < 0 %}-${{ balance_mes|floatformat:2|slice:"1:" }}{% else %}${{ balance_mes|floatformat:2 }}{% endif %}
+            </div>
+            <div class="kpi-sub {% if balance_mes >= 0 %}up{% else %}down{% endif %}">
+                <i class="bi bi-{% if balance_mes >= 0 %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {% if balance_mes >= 0 %}Mes positivo{% else %}Mes negativo{% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card vta">
+            <div class="kpi-label"><i class="bi bi-bag-check-fill" style="color:#4facfe;"></i> Ventas</div>
+            <div class="kpi-value">{{ num_ventas_mes }}</div>
+            <div class="kpi-sub neutral"><i class="bi bi-receipt"></i> Transacciones</div>
+        </div>
+
+        <div class="kpi-card tkt">
+            <div class="kpi-label"><i class="bi bi-tag-fill" style="color:#fa709a;"></i> Ticket prom.</div>
+            <div class="kpi-value">${{ ticket_promedio|floatformat:2 }}</div>
+            <div class="kpi-sub neutral"><i class="bi bi-calculator"></i> Por venta</div>
+        </div>
+
+    </div>
+
+    <!-- ── Gráficas ── -->
+    <div class="charts-grid">
+
+        <!-- Ingresos día a día -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title"><i class="bi bi-graph-up" style="color:#667eea;"></i> Ingresos diarios</div>
+                    <div class="chart-subtitle">{{ nombre_mes }} {{ anio_actual }} — cada día del mes</div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:linear-gradient(135deg,#667eea,#764ba2);"></div>
+                        Ingresos
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="chartIngresos" height="220"></canvas>
+            </div>
+        </div>
+
+        <!-- Egresos día a día -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title"><i class="bi bi-graph-down" style="color:#f5576c;"></i> Egresos diarios</div>
+                    <div class="chart-subtitle">{{ nombre_mes }} {{ anio_actual }} — cada día del mes</div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:linear-gradient(135deg,#f093fb,#f5576c);"></div>
+                        Egresos
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="chartEgresos" height="220"></canvas>
+            </div>
+        </div>
+
+        <!-- Tendencia 6 meses -->
+        <div class="chart-card full">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title"><i class="bi bi-activity" style="color:#43e97b;"></i> Tendencia — últimos 6 meses</div>
+                    <div class="chart-subtitle">Comparativa ingresos vs egresos por mes</div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#667eea;"></div> Ingresos
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#f5576c;"></div> Egresos
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="chartTendencia" height="130"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── Reporte del mes ── -->
+
+
+    <!-- Fila 2: Balance visual -->
+    <div class="reporte-grid" style="grid-template-columns: 1fr 340px;">
+
+        <!-- Mini reporte textual -->
+        <div class="reporte-card">
+            <div class="reporte-titulo">
+                <i class="bi bi-file-earmark-bar-graph-fill" style="color:#667eea;"></i>
+                Mini reporte — {{ nombre_mes }} {{ anio_actual }}
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+                <div style="background:#f0f2ff; border-radius:11px; padding:16px 18px;">
+                    <div style="font-size:0.75rem; color:#667eea; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                        <i class="bi bi-arrow-down-circle-fill"></i> Total Ingresos
+                    </div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2c3e50;">${{ total_ingresos_mes|floatformat:2 }}</div>
+                    <div style="font-size:0.72rem; color:#adb5bd; margin-top:3px;">
+                        {% if variacion_ingresos >= 0 %}
+                            <span style="color:#2e7d32;"><i class="bi bi-arrow-up-short"></i>{{ variacion_ingresos }}% vs mes anterior</span>
+                        {% else %}
+                            <span style="color:#c62828;"><i class="bi bi-arrow-down-short"></i>{{ variacion_ingresos }}% vs mes anterior</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div style="background:#fff5f6; border-radius:11px; padding:16px 18px;">
+                    <div style="font-size:0.75rem; color:#f5576c; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                        <i class="bi bi-arrow-up-circle-fill"></i> Total Egresos
+                    </div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2c3e50;">${{ total_egresos_mes|floatformat:2 }}</div>
+                    <div style="font-size:0.72rem; color:#adb5bd; margin-top:3px;">Gastos del mes</div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                <div style="background:#f8f9fa; border-radius:9px; padding:13px 15px; text-align:center;">
+                    <div style="font-size:0.72rem; color:#adb5bd; font-weight:600; text-transform:uppercase; margin-bottom:5px;"><i class="bi bi-bag-check" style="color:#4facfe;"></i> Ventas</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#2c3e50;">{{ num_ventas_mes }}</div>
+                </div>
+                <div style="background:#f8f9fa; border-radius:9px; padding:13px 15px; text-align:center;">
+                    <div style="font-size:0.72rem; color:#adb5bd; font-weight:600; text-transform:uppercase; margin-bottom:5px;"><i class="bi bi-tag" style="color:#fa709a;"></i> Ticket prom.</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#2c3e50;">${{ ticket_promedio|floatformat:0 }}</div>
+                </div>
+                <div style="background:{% if balance_mes >= 0 %}#f0fff4{% else %}#fff5f6{% endif %}; border-radius:9px; padding:13px 15px; text-align:center;">
+                    <div style="font-size:0.72rem; color:#adb5bd; font-weight:600; text-transform:uppercase; margin-bottom:5px;"><i class="bi bi-wallet2" style="color:#43e97b;"></i> Balance</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:{% if balance_mes >= 0 %}#2e7d32{% else %}#c62828{% endif %};">${{ balance_mes|floatformat:0 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance visual con barras -->
+        <div class="reporte-card">
+            <div class="reporte-titulo">
+                <i class="bi bi-pie-chart-fill" style="color:#43e97b;"></i>
+                Distribución
+            </div>
+            <div class="balance-visual">
+                {% with max_val=total_ingresos_mes|add:total_egresos_mes %}
+                <div class="bv-row">
+                    <div class="bv-header">
+                        <span class="bv-label"><i class="bi bi-arrow-down-circle-fill" style="color:#667eea;"></i> Ingresos</span>
+                        <span class="bv-val">${{ total_ingresos_mes|floatformat:2 }}</span>
+                    </div>
+                    <div class="bv-bar-track">
+                        <div class="bv-bar-fill ing" id="barIng" style="width:0%;"
+                             data-pct="{{ total_ingresos_mes|floatformat:0 }}"
+                             data-max="{{ max_val|floatformat:0 }}"></div>
+                    </div>
+                </div>
+                <div class="bv-row">
+                    <div class="bv-header">
+                        <span class="bv-label"><i class="bi bi-arrow-up-circle-fill" style="color:#f5576c;"></i> Egresos</span>
+                        <span class="bv-val">${{ total_egresos_mes|floatformat:2 }}</span>
+                    </div>
+                    <div class="bv-bar-track">
+                        <div class="bv-bar-fill egr" id="barEgr" style="width:0%;"
+                             data-pct="{{ total_egresos_mes|floatformat:0 }}"
+                             data-max="{{ max_val|floatformat:0 }}"></div>
+                    </div>
+                </div>
+                {% endwith %}
+
+                <hr class="bv-divider">
+
+                <div class="bv-balance {% if balance_mes >= 0 %}positive{% else %}negative{% endif %}">
+                    <div>
+                        <div class="bv-balance-label">
+                            {% if balance_mes >= 0 %}
+                                <i class="bi bi-emoji-smile-fill"></i> Balance positivo
+                            {% else %}
+                                <i class="bi bi-emoji-frown-fill"></i> Balance negativo
+                            {% endif %}
+                        </div>
+                        <div style="font-size:0.72rem; margin-top:3px; opacity:0.7;">{{ nombre_mes }} {{ anio_actual }}</div>
+                    </div>
+                    <div class="bv-balance-valor">${{ balance_mes|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── Datos desde Django ──
+const LABELS      = {{ labels_json|safe }};
+const DATA_ING    = {{ data_ingresos_json|safe }};
+const DATA_EGR    = {{ data_egresos_json|safe }};
+const LABELS_6M   = {{ labels_6m_json|safe }};
+const DATA_ING_6M = {{ data_ing_6m_json|safe }};
+const DATA_EGR_6M = {{ data_egr_6m_json|safe }};
+
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.color = '#6c757d';
+
+const tooltipStyle = {
+    backgroundColor: '#2c3e50',
+    titleColor: '#fff',
+    bodyColor: '#cbd5e0',
+    padding: 12,
+    cornerRadius: 10,
+    displayColors: true,
+    callbacks: {
+        label: ctx => ' $' + ctx.parsed.y.toLocaleString('es-MX', {minimumFractionDigits:2})
+    }
+};
+
+// ── Gráfica Ingresos diarios ──
+new Chart(document.getElementById('chartIngresos'), {
+    type: 'bar',
+    data: {
+        labels: LABELS,
+        datasets: [{
+            label: 'Ingresos',
+            data: DATA_ING,
+            backgroundColor: ctx => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                g.addColorStop(0, 'rgba(102,126,234,0.85)');
+                g.addColorStop(1, 'rgba(118,75,162,0.3)');
+                return g;
+            },
+            borderColor: '#667eea',
+            borderWidth: 0,
+            borderRadius: 6,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: tooltipStyle },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            y: {
+                grid: { color: '#f0f0f0' },
+                ticks: {
+                    font: { size: 11 },
+                    callback: v => '$' + v.toLocaleString('es-MX')
+                }
+            }
+        }
+    }
+});
+
+// ── Gráfica Egresos diarios ──
+new Chart(document.getElementById('chartEgresos'), {
+    type: 'bar',
+    data: {
+        labels: LABELS,
+        datasets: [{
+            label: 'Egresos',
+            data: DATA_EGR,
+            backgroundColor: ctx => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 300);
+                g.addColorStop(0, 'rgba(245,87,108,0.85)');
+                g.addColorStop(1, 'rgba(240,147,251,0.3)');
+                return g;
+            },
+            borderColor: '#f5576c',
+            borderWidth: 0,
+            borderRadius: 6,
+            borderSkipped: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: tooltipStyle },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            y: {
+                grid: { color: '#f0f0f0' },
+                ticks: {
+                    font: { size: 11 },
+                    callback: v => '$' + v.toLocaleString('es-MX')
+                }
+            }
+        }
+    }
+});
+
+// ── Gráfica Tendencia 6 meses ──
+new Chart(document.getElementById('chartTendencia'), {
+    type: 'line',
+    data: {
+        labels: LABELS_6M,
+        datasets: [
+            {
+                label: 'Ingresos',
+                data: DATA_ING_6M,
+                borderColor: '#667eea',
+                backgroundColor: ctx => {
+                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                    g.addColorStop(0, 'rgba(102,126,234,0.25)');
+                    g.addColorStop(1, 'rgba(102,126,234,0)');
+                    return g;
+                },
+                borderWidth: 3,
+                pointBackgroundColor: '#667eea',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                tension: 0.4,
+                fill: true,
+            },
+            {
+                label: 'Egresos',
+                data: DATA_EGR_6M,
+                borderColor: '#f5576c',
+                backgroundColor: ctx => {
+                    const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                    g.addColorStop(0, 'rgba(245,87,108,0.2)');
+                    g.addColorStop(1, 'rgba(245,87,108,0)');
+                    return g;
+                },
+                borderWidth: 3,
+                pointBackgroundColor: '#f5576c',
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                tension: 0.4,
+                fill: true,
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: false }, tooltip: tooltipStyle },
+        scales: {
+            x: { grid: { display: false } },
+            y: {
+                grid: { color: '#f0f0f0' },
+                ticks: { callback: v => '$' + v.toLocaleString('es-MX') }
+            }
+        }
+    }
+});
+
+// ── Animación barras de balance ──
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        ['barIng', 'barEgr'].forEach(id => {
+            const el  = document.getElementById(id);
+            if (!el) return;
+            const val = parseFloat(el.dataset.pct) || 0;
+            const max = parseFloat(el.dataset.max) || 1;
+            el.style.width = Math.min((val / max) * 100, 100) + '%';
+        });
+    }, 300);
+});
+</script>
+{% endblock %}

@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from inventario.models import Producto
@@ -12,6 +13,10 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib import pagesizes
 from io import BytesIO
+from django.core.paginator import Paginator
+from django.db.models import Sum, Q
+from django.utils import timezone
+
 def buscar_producto_codigo(request):
 
     codigo = request.GET.get("codigo")
@@ -32,16 +37,23 @@ def buscar_producto_codigo(request):
 
 @login_required
 def nueva_venta(request):
+    negocio   = get_negocio_activo(request)
+    productos = Producto.objects.filter(negocio=negocio, stock__gt=0)
 
-    negocio = get_negocio_activo(request)
-
-    productos = Producto.objects.filter(
-        negocio=negocio,
-        stock__gt=0
-    )
+    productos_json = json.dumps([
+        {
+            "id":     p.id,
+            "nombre": p.nombre,
+            "precio": float(p.precio_venta),
+            "stock":  p.stock or 0,
+            "codigo": p.codigo or ""
+        }
+        for p in productos
+    ])
 
     return render(request, "ventas/nueva_venta.html", {
-        "productos": productos
+        "productos":      productos,
+        "productos_json": productos_json,
     })
 
 
@@ -98,7 +110,7 @@ def guardar_venta(request):
                 negocio=negocio,
                 concepto=f"Venta #{venta.id}",
                 monto=total,
-                referencia=f"VENTA-{venta.id}"
+                referencia=f"#{negocio.id:02d}-{venta.id:04d}"
             )
 
             return JsonResponse({"success": True, "venta_id": venta.id})
@@ -219,3 +231,45 @@ def generar_pdf_venta(request, venta_id):
 
     buffer.seek(0)
     return HttpResponse(buffer, content_type='application/pdf')
+
+
+
+
+
+@login_required
+def lista_ingresos(request):
+    negocio = get_negocio_activo(request)
+    ingresos_qs = Ingreso.objects.filter(negocio=negocio).order_by("-fecha")
+
+    # Filtros
+    q = request.GET.get("q", "").strip().upper()
+    fecha_desde = request.GET.get("fecha_desde")
+    fecha_hasta = request.GET.get("fecha_hasta")
+
+    if q:
+        ingresos_qs = ingresos_qs.filter(
+            Q(concepto__icontains=q) | Q(referencia__icontains=q)
+        )
+    if fecha_desde:
+        ingresos_qs = ingresos_qs.filter(fecha__date__gte=fecha_desde)
+    if fecha_hasta:
+        ingresos_qs = ingresos_qs.filter(fecha__date__lte=fecha_hasta)
+
+    # Stats
+    total_general = Ingreso.objects.filter(negocio=negocio).aggregate(t=Sum("monto"))["t"] or 0
+    total_hoy = Ingreso.objects.filter(
+        negocio=negocio, fecha__date=timezone.now().date()
+    ).aggregate(t=Sum("monto"))["t"] or 0
+    total_registros = Ingreso.objects.filter(negocio=negocio).count()
+
+    # Paginación
+    paginator = Paginator(ingresos_qs, 20)
+    page = request.GET.get("page", 1)
+    ingresos = paginator.get_page(page)
+
+    return render(request, "ventas/lista_ingresos.html", {
+        "ingresos": ingresos,
+        "total_general": total_general,
+        "total_hoy": total_hoy,
+        "total_registros": total_registros,
+    })

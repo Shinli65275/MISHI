@@ -9,7 +9,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from negocios.utils import get_negocio_activo
 from proveedores.models import Proveedor
 from productos.models import Producto
-from inventario.models import Compra, DetalleCompra, Egreso, Lote
+from inventario.models import Compra, DetalleCompra, Egreso, EgresoFijo, Lote
 from io import BytesIO
 from datetime import date, datetime, timedelta
 from django.db import transaction
@@ -28,19 +28,17 @@ def nueva_compra(request):
 
 @login_required
 def productos_por_proveedor(request, proveedor_id):
-    negocio = get_negocio_activo(request)
-
-    productos = Producto.objects.filter(
-        proveedor_id=proveedor_id,
-        negocio=negocio
-    )
-
+    productos = Producto.objects.filter(proveedor_id=proveedor_id)
     data = {
-        "productos": list(
-            productos.values("id", "nombre")
-        )
+        "productos": [
+            {
+                "id": p.id,
+                "nombre": p.nombre,
+                "precio_venta": float(p.precio_venta)  # ← agrega esto
+            }
+            for p in productos
+        ]
     }
-
     return JsonResponse(data)
 
 @login_required
@@ -88,9 +86,6 @@ def guardar_compra(request):
         cantidad = int(item["cantidad"])
         precio = Decimal(item["precio"])
         subtotal = cantidad * precio
-
-        producto.stock += cantidad
-        producto.save()
 
         DetalleCompra.objects.create(
             compra=compra,
@@ -316,3 +311,64 @@ def lista_compras(request):
         'compras': compras,
         'proveedores': proveedores,
     })
+@login_required
+def lista_egresos_fijos(request):
+
+    negocio = get_negocio_activo(request)
+
+    egresos_fijos = EgresoFijo.objects.filter(
+        negocio=negocio
+    ).order_by("descripcion")
+
+    total_activos   = sum(e.monto for e in egresos_fijos if e.activo)
+    total_inactivos = sum(e.monto for e in egresos_fijos if not e.activo)
+
+    return render(request, "inventario/lista_egresos_fijos.html", {
+        "egresos_fijos": egresos_fijos,
+        "total_activos": total_activos,
+        "total_inactivos": total_inactivos,
+    })
+
+
+@login_required
+def nuevo_egreso_fijo(request):
+
+    negocio = get_negocio_activo(request)
+
+    # Categorías ya usadas en este negocio para los chips
+    categorias_existentes = (
+        EgresoFijo.objects.filter(negocio=negocio)
+        .values_list("categoria", flat=True)
+        .distinct()
+        .order_by("categoria")
+    )
+
+    if request.method == "POST":
+        descripcion = request.POST.get("descripcion", "").strip()
+        monto       = request.POST.get("monto")
+        categoria   = request.POST.get("categoria", "").strip()
+        activo      = request.POST.get("activo") == "on"
+
+        EgresoFijo.objects.create(
+            negocio=negocio,
+            descripcion=descripcion,
+            monto=monto,
+            categoria=categoria,
+            activo=activo,
+        )
+        return redirect("egresos_fijos")
+
+    return render(request, "inventario/nuevo_egreso_fijo.html", {
+        "categorias_existentes": categorias_existentes,
+    })
+
+
+@login_required
+def toggle_egreso_fijo(request, egreso_id):
+    """Activa o desactiva un egreso fijo via POST (botón en la lista)."""
+    negocio = get_negocio_activo(request)
+    egreso  = get_object_or_404(EgresoFijo, id=egreso_id, negocio=negocio)
+    egreso.activo = not egreso.activo
+    egreso.save()
+    return redirect("egresos_fijos")
+

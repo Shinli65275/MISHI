@@ -11,6 +11,20 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 <style>
+     .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
     :root {
         --sidebar-width: 260px;
         --sidebar-collapsed-width: 70px;
@@ -758,17 +772,15 @@
             </li>
 
             <!-- Ventas - ADMIN, VENDEDOR -->
-            {% if rol_usuario == 'ADMIN' or rol_usuario == 'VENDEDOR' %}
             <li>
                 <a href="{% url 'nueva_venta' %}">
                     <i class="bi bi-cart-check"></i>
                     <span class="menu-text">Ventas</span>
                 </a>
             </li>
-            {% endif %}
 
             <!-- Productos - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'lista_productos' %}">
                     <i class="bi bi-box-seam"></i>
@@ -776,23 +788,8 @@
                 </a>
             </li>
             {% endif %}
-
-            <!-- Movimiento y Existencias - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
-            <li>
-                <a href="#" class="dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-movimientos')">
-                    <i class="bi bi-arrow-left-right"></i>
-                    <span class="menu-text">Movimiento y Existencias</span>
-                </a>
-                <ul class="submenu" id="submenu-movimientos">
-                    <li><a href="{% url 'movimientos' %}"><i class="bi bi-dot"></i> Movimientos</a></li>
-                    <li><a href="{% url 'existencias' %}"><i class="bi bi-dot"></i> Existencias</a></li>
-                </ul>
-            </li>
-            {% endif %}
-
             <!-- Compras - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'lista_compras' %}">
                     <i class="bi bi-bag"></i>
@@ -802,14 +799,14 @@
             {% endif %}
 
             <!-- Reportes - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="#" class="dropdown-toggle" onclick="toggleSubmenu(event, 'submenu-reportes')">
                     <i class="bi bi-file-earmark-text"></i>
                     <span class="menu-text">Reportes</span>
                 </a>
                 <ul class="submenu" id="submenu-reportes">
-                    <li><a href="{% url 'ingresos' %}"><i class="bi bi-dot"></i> Ingresos</a></li>
+                    <li><a href="{% url 'lista_ingresos' %}"><i class="bi bi-dot"></i> Ingresos</a></li>
                     <li><a href="{% url 'egresos' %}"><i class="bi bi-dot"></i> Egresos</a></li>
                     <li><a href="{% url 'egresos_fijos' %}"><i class="bi bi-dot"></i> Egresos Fijos</a></li>
                 </ul>
@@ -817,7 +814,7 @@
             {% endif %}
 
             <!-- Gráficas - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'graficas' %}">
                     <i class="bi bi-bar-chart"></i>
@@ -827,7 +824,7 @@
             {% endif %}
 
             <!-- Proveedores - ADMIN -->
-            {% if rol_usuario == 'ADMIN' %}
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'lista_proveedores' %}">
                     <i class="bi bi-truck"></i>
@@ -837,7 +834,7 @@
             {% endif %}
 
             <!-- Cotización - Solo ALMACEN-ADMIN -->
-            {% if rol_usuario == 'ALMACEN-ADMIN' %}
+            {% if rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'cotizacion' %}">
                     <i class="bi bi-calculator"></i>
@@ -873,7 +870,7 @@
                             <i class="bi bi-person-badge"></i> Vendedor
                         {% elif rol_usuario == 'ALMACEN' %}
                             <i class="bi bi-boxes"></i> Almacén
-                        {% elif rol_usuario == 'ALMACEN-ADMIN' %}
+                        {% elif rol_usuario == 'ALMACEN_ADMIN' %}
                             <i class="bi bi-shield-fill-check"></i> Almacén Admin
                         {% endif %}
                     </span>
@@ -889,7 +886,7 @@
                             <li><a class="dropdown-item" href="{% url 'perfil_usuario' %}"><i class="bi bi-person"></i> Mi Perfil</a></li>
 
                             <!-- Lista de Empleados - Solo ADMIN -->
-                            {% if rol_usuario == 'ADMIN' %}
+                            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'lista_empleados' %}">
                                     <i class="bi bi-people"></i> Lista de Empleados

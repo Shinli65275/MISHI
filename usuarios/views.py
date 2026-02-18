@@ -20,6 +20,8 @@ def registro(request):
         direccion = request.POST.get("direccion")
         telefono = request.POST.get("telefono")
 
+        #Verificar si es distribuidor
+        distribuidor = request.POST.get("es_distribuidor")
         # Crear usuario
         user = User.objects.create_user(
             username=username,
@@ -37,7 +39,7 @@ def registro(request):
         UsuarioNegocio.objects.create(
             usuario=user,
             negocio=negocio,
-            rol="ADMIN"
+            rol="ALMACEN_ADMIN" if distribuidor == "si" else "ADMIN"
         )
 
 
@@ -64,7 +66,7 @@ def crear_empleado(request):
     negocio = get_negocio_activo(request)
     rol = get_rol_usuario(request)
 
-    if rol != "ADMIN":
+    if rol != "ADMIN" and rol != "ALMACEN_ADMIN":
         return redirect("inicio")
 
     if not negocio:
@@ -132,7 +134,7 @@ def eliminar_empleado(request, usuario_negocio_id):
     
     # Verificar que el usuario que intenta eliminar es administrador
     rol = get_rol_usuario(request)
-    if rol != 'ADMIN':
+    if rol != 'ADMIN' and rol != 'ALMACEN_ADMIN':
         messages.error(request, "No tienes permisos para realizar esta acción")
         return redirect('lista_empleados')
     
@@ -169,7 +171,7 @@ def editar_empleado(request, usuario_negocio_id):
 
     # Verificar que el usuario que intenta editar es administrador
     rol = get_rol_usuario(request)
-    if rol != 'ADMIN':
+    if rol != 'ADMIN' and rol != 'ALMACEN_ADMIN':
         messages.error(request, "No tienes permisos para realizar esta acción")
         return redirect('lista_empleados')
     

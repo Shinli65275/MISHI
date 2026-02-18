@@ -1,21 +1,384 @@
 {% extends "base.html" %}
 
+{% block title %}Crear Cuenta - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registro-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 16px;
+    }
+
+    .registro-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+        width: 100%;
+        max-width: 520px;
+        overflow: hidden;
+    }
+
+    /* ── Header del card ── */
+    .registro-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 32px 36px 28px;
+        text-align: center;
+        color: white;
+    }
+
+    .registro-logo {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: 5px;
+        margin-bottom: 4px;
+    }
+
+    .registro-header p {
+        margin: 0;
+        font-size: 0.88rem;
+        opacity: 0.85;
+    }
+
+    /* ── Cuerpo ── */
+    .registro-body { padding: 32px 36px 36px; }
+
+    /* ── Sección ── */
+    .seccion-titulo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #667eea;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin: 0 0 16px 0;
+    }
+
+    .seccion-titulo::after {
+        content: '';
+        flex: 1;
+        height: 1.5px;
+        background: linear-gradient(to right, #e9ecef, transparent);
+    }
+
+    .seccion + .seccion { margin-top: 28px; }
+
+    /* ── Inputs ── */
+    .campo {
+        position: relative;
+        margin-bottom: 14px;
+    }
+
+    .campo-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        font-size: 1rem;
+        pointer-events: none;
+        transition: color 0.2s;
+    }
+
+    .campo input {
+        width: 100%;
+        padding: 13px 15px 13px 42px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 0.92rem;
+        color: #2c3e50;
+        background: #fdfdfd;
+        box-sizing: border-box;
+        transition: border-color 0.25s, box-shadow 0.25s, background 0.2s;
+        outline: none;
+    }
+
+    .campo input::placeholder { color: #c0c7cf; }
+
+    .campo input:focus {
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+    }
+
+    .campo input:focus + .campo-icon,
+    .campo:focus-within .campo-icon { color: #667eea; }
+
+    /* Layout en dos columnas para campos de negocio */
+    .campos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 14px;
+    }
+
+    .campos-grid .campo.full { grid-column: 1 / -1; }
+
+    /* ── Mensajes de error Django ── */
+    .error-list {
+        background: #fff5f5;
+        border: 1.5px solid #fed7d7;
+        border-radius: 9px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 0.83rem;
+        color: #c53030;
+        list-style: none;
+    }
+
+    .error-list li { display: flex; align-items: center; gap: 7px; }
+    .error-list li + li { margin-top: 5px; }
+
+    /* ── Botón ── */
+    .btn-registrar {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 28px;
+        letter-spacing: 0.3px;
+    }
+
+    .btn-registrar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(102,126,234,0.45);
+    }
+
+    .btn-registrar:active { transform: translateY(0); }
+
+    /* ── Pie ── */
+    .registro-pie {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.84rem;
+        color: #adb5bd;
+    }
+
+    .registro-pie a {
+        color: #667eea;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .registro-pie a:hover { text-decoration: underline; }
+
+    /* ── Distribuidor ── */
+    .distribuidor-field {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 13px 16px;
+        background: #fdfdfd;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .distribuidor-field:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+        background: white;
+    }
+
+    .distribuidor-label {
+        font-size: 0.92rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .distribuidor-label i { color: #adb5bd; }
+
+    .distribuidor-opciones {
+        display: flex;
+        gap: 10px;
+    }
+
+    .radio-opcion {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .radio-opcion input[type="radio"] { display: none; }
+
+    .radio-custom {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #dee2e6;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .radio-custom::after {
+        content: '';
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #667eea;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.2s;
+    }
+
+    .radio-opcion input[type="radio"]:checked ~ .radio-custom {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+    }
+
+    .radio-opcion input[type="radio"]:checked ~ .radio-custom::after {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .radio-texto {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .radio-opcion input[type="radio"]:checked ~ .radio-custom ~ .radio-texto {
+        color: #667eea;
+    }
+
+    @media (max-width: 500px) {
+        .registro-body { padding: 24px 22px 28px; }
+        .registro-header { padding: 26px 22px 22px; }
+        .campos-grid { grid-template-columns: 1fr; }
+        .campos-grid .campo.full { grid-column: 1; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Crear cuenta</h2>
+<div class="registro-wrapper">
+    <div class="registro-card">
 
-<form method="POST">
-    {% csrf_token %}
+        <!-- Header -->
+        <div class="registro-header">
+            <div class="registro-logo">MISHI</div>
+            <p>Crea tu cuenta y comienza a gestionar tu negocio</p>
+        </div>
 
-    <h3>Datos del usuario</h3>
-    <input type="text" name="username" placeholder="Usuario"><br>
-    <input type="password" name="password" placeholder="Contraseña"><br>
+        <!-- Cuerpo -->
+        <div class="registro-body">
 
-    <h3>Datos del negocio</h3>
-    <input type="text" name="nombre_negocio" placeholder="Nombre del negocio"><br>
-    <input type="text" name="direccion" placeholder="Dirección"><br>
-    <input type="text" name="telefono" placeholder="Teléfono"><br>
+            {% if form.errors %}
+            <ul class="error-list">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
 
-    <button type="submit">Crear cuenta</button>
-</form>
+            <form method="POST" novalidate>
+                {% csrf_token %}
 
+                <!-- Sección usuario -->
+                <div class="seccion">
+                    <div class="seccion-titulo">
+                        <i class="bi bi-person-fill"></i> Datos del usuario
+                    </div>
+
+                    <div class="campo">
+                        <input type="text" name="username" placeholder="Nombre de usuario"
+                               value="{{ request.POST.username|default:'' }}" autocomplete="username">
+                        <i class="bi bi-person campo-icon"></i>
+                    </div>
+
+                    <div class="campo">
+                        <input type="password" name="password" placeholder="Contraseña" autocomplete="new-password">
+                        <i class="bi bi-lock campo-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Sección negocio -->
+                <div class="seccion">
+                    <div class="seccion-titulo">
+                        <i class="bi bi-shop"></i> Datos del negocio
+                    </div>
+
+                    <div class="campos-grid">
+                        <div class="campo full">
+                            <input type="text" name="nombre_negocio" placeholder="Nombre del negocio"
+                                   value="{{ request.POST.nombre_negocio|default:'' }}">
+                            <i class="bi bi-shop campo-icon"></i>
+                        </div>
+
+                        <div class="campo full">
+                            <input type="text" name="direccion" placeholder="Dirección"
+                                   value="{{ request.POST.direccion|default:'' }}">
+                            <i class="bi bi-geo-alt campo-icon"></i>
+                        </div>
+
+                        <div class="campo">
+                            <input type="text" name="telefono" placeholder="Teléfono"
+                                   value="{{ request.POST.telefono|default:'' }}">
+                            <i class="bi bi-telephone campo-icon"></i>
+                        </div>
+
+                        <div class="campo full">
+                            <div class="distribuidor-field">
+                                <div class="distribuidor-label">
+                                    <i class="bi bi-truck"></i> ¿Eres distribuidor?
+                                </div>
+                                <div class="distribuidor-opciones">
+                                    <label class="radio-opcion">
+                                        <input type="radio" name="es_distribuidor" value="si"
+                                            {% if request.POST.es_distribuidor == "si" %}checked{% endif %}>
+                                        <span class="radio-custom"></span>
+                                        <span class="radio-texto">Sí</span>
+                                    </label>
+                                    <label class="radio-opcion">
+                                        <input type="radio" name="es_distribuidor" value="no"
+                                            {% if request.POST.es_distribuidor != "si" %}checked{% endif %}>
+                                        <span class="radio-custom"></span>
+                                        <span class="radio-texto">No</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-registrar">
+                    <i class="bi bi-person-plus-fill"></i> Crear cuenta
+                </button>
+            </form>
+
+            <div class="registro-pie">
+                ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

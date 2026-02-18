@@ -1,0 +1,756 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingresos - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.4rem;
+    }
+
+    /* ── Tarjetas resumen ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .stat-icon.green  { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+    .stat-icon.blue   { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+
+    .stat-info .label { font-size: 0.78rem; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+    .stat-info .value {
+        font-size: 1.55rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    /* ── Filtros ── */
+    .filtros-card {
+        background: white;
+        border-radius: 15px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .filtro-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 160px; }
+    .filtro-group label { font-size: 0.78rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .filtro-input {
+        padding: 9px 13px;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-size: 0.88rem;
+        color: #2c3e50;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: white;
+    }
+
+    .filtro-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+    .btn-filtrar {
+        padding: 9px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+    }
+
+    .btn-filtrar:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.35); }
+
+    .btn-limpiar {
+        padding: 9px 16px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+        text-decoration: none;
+    }
+
+    .btn-limpiar:hover { background: #f8f9fa; border-color: #adb5bd; color: #495057; }
+
+    /* ── Tabla ── */
+    .card-section {
+        background: white;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .card-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .card-section-header h5 {
+        color: #2c3e50;
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge-count {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    .tabla-wrap { overflow-x: auto; border-radius: 8px; overflow: hidden; }
+
+    .ingresos-table { width: 100%; border-collapse: collapse; }
+
+    .ingresos-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .ingresos-table thead th {
+        padding: 13px 16px;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+
+    .ingresos-table thead th.text-right { text-align: right; }
+
+    .ingresos-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.15s;
+    }
+
+    .ingresos-table tbody tr:hover { background: #f8f9fa; }
+    .ingresos-table tbody tr:last-child { border-bottom: none; }
+
+    .ingresos-table tbody td {
+        padding: 13px 16px;
+        color: #495057;
+        vertical-align: middle;
+        font-size: 0.88rem;
+    }
+
+    .concepto-cell { display: flex; align-items: center; gap: 10px; }
+
+    .concepto-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #f0f2ff 0%, #e8ecff 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .concepto-nombre { font-weight: 600; color: #2c3e50; font-size: 0.9rem; }
+
+    .ref-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f0f2ff;
+        color: #667eea;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .ref-badge.empty { background: #f8f9fa; color: #adb5bd; }
+
+    .monto-valor {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #2e7d32;
+        text-align: right;
+    }
+
+    .fecha-text { color: #6c757d; font-size: 0.82rem; white-space: nowrap; }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: #adb5bd; }
+    .empty-state i { font-size: 3.5rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { margin: 0; font-size: 0.95rem; }
+
+    /* ── Paginación ── */
+    .paginacion {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        margin-top: 22px;
+        flex-wrap: wrap;
+    }
+
+    .pag-btn {
+        padding: 7px 13px;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #495057;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .pag-btn:hover { border-color: #667eea; color: #667eea; background: #f0f2ff; }
+
+    .pag-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+        color: white;
+    }
+
+    .pag-btn.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+    .btn-detalle {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 13px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-detalle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+
+    /* ── Modal ticket ── */
+    .ticket-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ticket-overlay.open { display: flex; }
+
+    .ticket-modal {
+        background: white;
+        border-radius: 16px;
+        width: 380px;
+        max-width: 95vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+        animation: slideModal 0.25s ease;
+    }
+
+    @keyframes slideModal {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .ticket-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 22px;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ticket-modal-header h6 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+    .btn-close-modal {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        font-size: 1rem;
+    }
+
+    .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
+
+    #ticketPreview {
+        padding: 26px 28px;
+        font-family: 'Courier New', Courier, monospace;
+        background: #fafafa;
+    }
+
+    .ticket-store-name { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; color: #2c3e50; margin-bottom: 2px; }
+    .ticket-store-sub  { text-align: center; font-size: 0.72rem; color: #6c757d; margin-bottom: 16px; letter-spacing: 1px; }
+    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 12px 0; }
+    .ticket-divider.solid { border-top: 2px solid #2c3e50; }
+    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 5px; }
+    .ticket-info-row span:first-child { color: #6c757d; }
+    .ticket-info-row span:last-child  { font-weight: 700; }
+
+    .ticket-items-header {
+        display: grid;
+        grid-template-columns: 1fr 42px 80px;
+        gap: 4px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .ticket-item-row {
+        display: grid;
+        grid-template-columns: 1fr 42px 80px;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #495057;
+        padding: 6px 0;
+        border-bottom: 1px dotted #e9ecef;
+        align-items: center;
+    }
+
+    .ticket-item-row .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+    .ticket-footer-text { text-align: center; font-size: 0.7rem; color: #adb5bd; margin-top: 4px; line-height: 1.7; }
+
+    .ticket-modal-footer {
+        padding: 16px 22px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        background: white;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .btn-print {
+        padding: 10px 22px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
+
+    .btn-cerrar-ticket {
+        padding: 10px 18px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .btn-cerrar-ticket:hover { background: #f8f9fa; }
+
+    @media print {
+        body * { visibility: hidden !important; }
+        #ticketPrintArea, #ticketPrintArea * { visibility: visible !important; }
+        #ticketPrintArea {
+            position: fixed !important;
+            inset: 0 !important;
+            display: flex !important;
+            justify-content: center !important;
+            padding: 10px !important;
+            background: white !important;
+        }
+        #ticketPreview { width: 280px !important; background: white !important; }
+    }
+
+    @media (max-width: 768px) {
+        .page-header h2 { font-size: 1.2rem; }
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+        .ingresos-table thead th:nth-child(4),
+        .ingresos-table tbody td:nth-child(4) { display: none; }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid { grid-template-columns: 1fr; }
+        .concepto-icon { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2><i class="bi bi-graph-up-arrow"></i> Ingresos</h2>
+        <span style="font-size:0.82rem; color:#adb5bd; display:flex; align-items:center; gap:6px;">
+            <i class="bi bi-clock"></i>
+            <span id="horaActual"></span>
+        </span>
+    </div>
+
+    <!-- Tarjetas resumen -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-currency-dollar"></i></div>
+            <div class="stat-info">
+                <div class="label">Total General</div>
+                <div class="value">${{ total_general|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-calendar-check"></i></div>
+            <div class="stat-info">
+                <div class="label">Ingresos Hoy</div>
+                <div class="value">${{ total_hoy|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-receipt"></i></div>
+            <div class="stat-info">
+                <div class="label">Registros</div>
+                <div class="value">{{ total_registros }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="GET" class="filtros-card">
+        <div class="filtro-group">
+            <label><i class="bi bi-search"></i> Buscar</label>
+            <input type="text" name="q" value="{{ request.GET.q }}"
+                   class="filtro-input" placeholder="Concepto o referencia...">
+        </div>
+        <div class="filtro-group">
+            <label><i class="bi bi-calendar-event"></i> Desde</label>
+            <input type="date" name="fecha_desde" value="{{ request.GET.fecha_desde }}" class="filtro-input">
+        </div>
+        <div class="filtro-group">
+            <label><i class="bi bi-calendar-event"></i> Hasta</label>
+            <input type="date" name="fecha_hasta" value="{{ request.GET.fecha_hasta }}" class="filtro-input">
+        </div>
+        <button type="submit" class="btn-filtrar">
+            <i class="bi bi-funnel-fill"></i> Filtrar
+        </button>
+        <a href="{% url 'lista_ingresos' %}" class="btn-limpiar">
+            <i class="bi bi-x-lg"></i> Limpiar
+        </a>
+    </form>
+
+    <!-- Tabla -->
+    <div class="card-section">
+        <div class="card-section-header">
+            <h5><i class="bi bi-list-ul"></i> Registros de Ingresos</h5>
+            <span class="badge-count">{{ ingresos|length }} resultado{{ ingresos|length|pluralize }}</span>
+        </div>
+
+        {% if ingresos %}
+        <div class="tabla-wrap">
+            <table class="ingresos-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th><i class="bi bi-tag"></i> Concepto</th>
+                        <th><i class="bi bi-hash"></i> Referencia</th>
+                        <th><i class="bi bi-clock"></i> Fecha</th>
+                        <th class="text-right"><i class="bi bi-cash-stack"></i> Monto</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ingreso in ingresos %}
+                    <tr>
+                        <td style="color:#adb5bd; font-weight:600; font-size:0.8rem;">{{ ingreso.id }}</td>
+
+                        <td>
+                            <div class="concepto-cell">
+                                <div class="concepto-icon">
+                                    <i class="bi bi-arrow-down-circle-fill"></i>
+                                </div>
+                                <span class="concepto-nombre">{{ ingreso.concepto }}</span>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if ingreso.referencia %}
+                                <span class="ref-badge">
+                                    <i class="bi bi-link-45deg"></i>
+                                    {{ ingreso.referencia }}
+                                </span>
+                            {% else %}
+                                <span class="ref-badge empty">—</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="fecha-text">
+                                <i class="bi bi-calendar3"></i>
+                                {{ ingreso.fecha|date:"d/m/Y" }}
+                                <span style="color:#adb5bd; margin-left:4px;">
+                                    {{ ingreso.fecha|date:"H:i" }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="monto-valor">
+                                ${{ ingreso.monto|floatformat:2 }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <button class="btn-detalle" onclick="verTicket(
+                                '{{ ingreso.id }}',
+                                '{{ ingreso.concepto|escapejs }}',
+                                '{{ ingreso.referencia|default:""|escapejs }}',
+                                '{{ ingreso.monto|floatformat:2 }}',
+                                '{{ ingreso.fecha|date:"d/m/Y" }}',
+                                '{{ ingreso.fecha|date:"H:i" }}'
+                            )">
+                                <i class="bi bi-receipt"></i> Ticket
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if ingresos.has_other_pages %}
+        <div class="paginacion">
+            {% if ingresos.has_previous %}
+                <a class="pag-btn" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.fecha_desde %}fecha_desde={{ request.GET.fecha_desde }}&{% endif %}{% if request.GET.fecha_hasta %}fecha_hasta={{ request.GET.fecha_hasta }}&{% endif %}page={{ ingresos.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% else %}
+                <span class="pag-btn disabled"><i class="bi bi-chevron-left"></i></span>
+            {% endif %}
+
+            {% for num in ingresos.paginator.page_range %}
+                {% if ingresos.number == num %}
+                    <span class="pag-btn active">{{ num }}</span>
+                {% elif num > ingresos.number|add:'-3' and num < ingresos.number|add:'3' %}
+                    <a class="pag-btn" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.fecha_desde %}fecha_desde={{ request.GET.fecha_desde }}&{% endif %}{% if request.GET.fecha_hasta %}fecha_hasta={{ request.GET.fecha_hasta }}&{% endif %}page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if ingresos.has_next %}
+                <a class="pag-btn" href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}{% if request.GET.fecha_desde %}fecha_desde={{ request.GET.fecha_desde }}&{% endif %}{% if request.GET.fecha_hasta %}fecha_hasta={{ request.GET.fecha_hasta }}&{% endif %}page={{ ingresos.next_page_number }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            {% else %}
+                <span class="pag-btn disabled"><i class="bi bi-chevron-right"></i></span>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No se encontraron ingresos{% if request.GET.q or request.GET.fecha_desde or request.GET.fecha_hasta %} con los filtros aplicados{% endif %}.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal Ticket -->
+<div class="ticket-overlay" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
+    <div class="ticket-modal">
+        <div class="ticket-modal-header">
+            <h6><i class="bi bi-receipt"></i> Comprobante de Ingreso</h6>
+            <button class="btn-close-modal" onclick="cerrarTicket()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div id="ticketPrintArea">
+            <div id="ticketPreview">
+                <div class="ticket-store-name">MISHI</div>
+                <div class="ticket-store-sub">Comprobante de Ingreso</div>
+                <hr class="ticket-divider solid">
+                <div class="ticket-info-row"><span>Folio</span><span id="tFolio">#—</span></div>
+                <div class="ticket-info-row"><span>Fecha</span><span id="tFecha">—</span></div>
+                <div class="ticket-info-row"><span>Hora</span><span id="tHora">—</span></div>
+                <hr class="ticket-divider">
+                <div class="ticket-items-header">
+                    <span>Concepto</span>
+                    <span style="text-align:right; grid-column: 2 / span 2;">Monto</span>
+                </div>
+                <div id="tItems"></div>
+                <hr class="ticket-divider solid">
+                <div class="ticket-total-row">
+                    <span>TOTAL</span>
+                    <span id="tTotal">$0.00</span>
+                </div>
+                <hr class="ticket-divider">
+                <div id="tRefWrap" class="ticket-info-row" style="display:none;">
+                    <span>Referencia</span><span id="tRef">—</span>
+                </div>
+                <hr class="ticket-divider" id="tRefDivider" style="display:none;">
+                <div class="ticket-footer-text">
+                    Documento generado por MISHI<br>
+                    <span id="tFechaFooter">—</span><br>
+                    — Gracias por su preferencia —
+                </div>
+            </div>
+        </div>
+        <div class="ticket-modal-footer">
+            <button class="btn-cerrar-ticket" onclick="cerrarTicket()">
+                <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+            <button class="btn-print" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> Imprimir
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function actualizarReloj() {
+    const now = new Date();
+    document.getElementById('horaActual').textContent =
+        now.toLocaleDateString('es-MX') + ' ' +
+        now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+actualizarReloj();
+setInterval(actualizarReloj, 60000);
+
+function verTicket(id, concepto, referencia, monto, fecha, hora) {
+    document.getElementById('tFolio').textContent    = '#' + id;
+    document.getElementById('tFecha').textContent    = fecha;
+    document.getElementById('tHora').textContent     = hora;
+    document.getElementById('tTotal').textContent    = '$' + parseFloat(monto).toFixed(2);
+    document.getElementById('tFechaFooter').textContent = fecha + ' ' + hora;
+
+    document.getElementById('tItems').innerHTML = `
+        <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
+            <span class="item-name">${concepto}</span>
+            <span style="text-align:right; font-weight:700;">$${parseFloat(monto).toFixed(2)}</span>
+        </div>`;
+
+    const refWrap    = document.getElementById('tRefWrap');
+    const refDivider = document.getElementById('tRefDivider');
+    if (referencia) {
+        document.getElementById('tRef').textContent = referencia;
+        refWrap.style.display    = 'flex';
+        refDivider.style.display = 'block';
+    } else {
+        refWrap.style.display    = 'none';
+        refDivider.style.display = 'none';
+    }
+
+    document.getElementById('ticketOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarTicket() {
+    document.getElementById('ticketOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function cerrarSiOverlay(e) {
+    if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+}
+</script>
+{% endblock %}
