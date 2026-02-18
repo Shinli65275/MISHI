@@ -1,0 +1,741 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle Compra #{{ compra.id }} - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Layout base ────────────────────────────────── */
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-ticket {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+    }
+
+    .btn-ticket:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.35);
+    }
+
+    /* ── Info cards ─────────────────────────────────── */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .info-card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .info-card-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-card-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .info-card-value.highlight {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 1.3rem;
+    }
+
+    /* ── Table card ─────────────────────────────────── */
+    .card-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .card-section h5 {
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .compras-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .compras-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .compras-table thead th {
+        padding: 14px 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .compras-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+
+    .compras-table tbody tr:hover { background: #f8f9fa; }
+    .compras-table tbody tr:last-child { border-bottom: none; }
+
+    .compras-table tbody td {
+        padding: 14px 15px;
+        color: #495057;
+    }
+
+    .nombre-producto {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+    }
+
+    .prod-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .cantidad-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .total-badge {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .total-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
+        padding: 20px 0 0 0;
+        border-top: 2px solid #f0f0f0;
+        margin-top: 10px;
+    }
+
+    .total-label {
+        color: #6c757d;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .total-value {
+        font-size: 1.7rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Ticket modal overlay ───────────────────────── */
+    .ticket-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+        animation: fadeOverlay 0.2s ease;
+    }
+
+    .ticket-overlay.open { display: flex; }
+
+    @keyframes fadeOverlay {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    .ticket-modal {
+        background: white;
+        border-radius: 16px;
+        width: 400px;
+        max-width: 95vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+        animation: slideModal 0.25s ease;
+    }
+
+    @keyframes slideModal {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .ticket-modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 22px;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ticket-modal-header h6 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-close-modal {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        font-size: 1rem;
+    }
+
+    .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
+
+    /* ── Ticket visual preview ──────────────────────── */
+    #ticketPreview {
+        padding: 28px 30px;
+        font-family: 'Courier New', Courier, monospace;
+        background: #fafafa;
+    }
+
+    .ticket-store-name {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 4px;
+        color: #2c3e50;
+        margin-bottom: 2px;
+    }
+
+    .ticket-store-sub {
+        text-align: center;
+        font-size: 0.72rem;
+        color: #6c757d;
+        margin-bottom: 16px;
+        letter-spacing: 1px;
+    }
+
+    .ticket-divider {
+        border: none;
+        border-top: 1px dashed #adb5bd;
+        margin: 12px 0;
+    }
+
+    .ticket-divider.solid {
+        border-top: 2px solid #2c3e50;
+    }
+
+    .ticket-info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.78rem;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    .ticket-info-row span:first-child { color: #6c757d; }
+    .ticket-info-row span:last-child  { font-weight: 700; }
+
+    .ticket-items-header {
+        display: grid;
+        grid-template-columns: 1fr 38px 68px 68px;
+        gap: 4px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .ticket-item-row {
+        display: grid;
+        grid-template-columns: 1fr 38px 68px 68px;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #495057;
+        padding: 6px 0;
+        border-bottom: 1px dotted #e9ecef;
+        align-items: center;
+    }
+
+    .ticket-item-row .item-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ticket-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #2c3e50;
+        padding: 6px 0 2px;
+    }
+
+    .ticket-items-summary {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+
+    .ticket-barcode {
+        text-align: center;
+        font-size: 2rem;
+        letter-spacing: 3px;
+        color: #2c3e50;
+        margin: 10px 0 2px;
+        line-height: 1;
+    }
+
+    .ticket-barcode-num {
+        text-align: center;
+        font-size: 0.68rem;
+        color: #6c757d;
+        letter-spacing: 3px;
+    }
+
+    .ticket-footer-text {
+        text-align: center;
+        font-size: 0.7rem;
+        color: #adb5bd;
+        margin-top: 4px;
+        line-height: 1.7;
+    }
+
+    /* ── Modal footer buttons ───────────────────────── */
+    .ticket-modal-footer {
+        padding: 16px 22px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        background: white;
+        border-radius: 0 0 16px 16px;
+    }
+
+    .btn-print {
+        padding: 10px 22px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-print:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+    }
+
+    .btn-cancel-modal {
+        padding: 10px 18px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .btn-cancel-modal:hover {
+        background: #f8f9fa;
+        border-color: #ced4da;
+    }
+
+    /* ── Print styles ───────────────────────────────── */
+    @media print {
+        body * { visibility: hidden !important; }
+
+        #ticketPrintArea,
+        #ticketPrintArea * { visibility: visible !important; }
+
+        #ticketPrintArea {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            padding: 10px !important;
+            background: white !important;
+        }
+
+        #ticketPreview {
+            width: 280px !important;
+            padding: 16px !important;
+            background: white !important;
+        }
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 768px) {
+        .page-header { padding: 20px; }
+        .page-header h2 { font-size: 1.3rem; }
+        .header-actions { width: 100%; flex-direction: column; }
+        .btn-back, .btn-ticket { width: 100%; justify-content: center; }
+        .info-grid { grid-template-columns: 1fr 1fr; }
+        .card-section { padding: 20px; }
+        .compras-table thead th,
+        .compras-table tbody td { padding: 10px; font-size: 0.85rem; }
+        .prod-icon { display: none; }
+        .total-footer { flex-direction: column; align-items: flex-end; }
+    }
+
+    @media (max-width: 480px) {
+        .info-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-receipt"></i>
+            Detalle de Compra <span style="color:#667eea;">#{{ compra.numero_factura }}</span>
+        </h2>
+        <div class="header-actions">
+            <button class="btn-ticket" onclick="abrirTicket()">
+                <i class="bi bi-printer"></i>
+                Generar Ticket
+            </button>
+            <a href="{% url 'lista_compras' %}" class="btn-back">
+                <i class="bi bi-arrow-left"></i>
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-card-icon"><i class="bi bi-truck"></i></div>
+            <div class="info-card-content">
+                <span class="info-card-label">Proveedor</span>
+                <span class="info-card-value">{{ compra.proveedor.nombre }}</span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon"><i class="bi bi-box-seam"></i></div>
+            <div class="info-card-content">
+                <span class="info-card-label">Total Productos</span>
+                <span class="info-card-value">{{ compra.total_productos }} artículos</span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon"><i class="bi bi-calendar3"></i></div>
+            <div class="info-card-content">
+                <span class="info-card-label">Fecha de Compra</span>
+                <span class="info-card-value">{{ compra.fecha|date:"d/m/Y H:i" }}</span>
+            </div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="info-card-content">
+                <span class="info-card-label">Total Pagado</span>
+                <span class="info-card-value highlight">${{ compra.total|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="card-section">
+        <h5>
+            <i class="bi bi-list-check"></i>
+            Productos Adquiridos
+        </h5>
+        <div class="table-responsive">
+            <table class="compras-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-box"></i> Producto</th>
+                        <th><i class="bi bi-123"></i> Cantidad</th>
+                        <th><i class="bi bi-tag"></i> Precio Unit.</th>
+                        <th><i class="bi bi-cash"></i> Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in detalles %}
+                    <tr>
+                        <td>
+                            <div class="nombre-producto">
+                                <div class="prod-icon"><i class="bi bi-box"></i></div>
+                                {{ d.producto.nombre }}
+                            </div>
+                        </td>
+                        <td><span class="cantidad-badge">{{ d.cantidad }}</span></td>
+                        <td>${{ d.precio_unitario|floatformat:2 }}</td>
+                        <td><span class="total-badge">${{ d.subtotal|floatformat:2 }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="total-footer">
+            <span class="total-label">Total de la compra:</span>
+            <span class="total-value">${{ compra.total|floatformat:2 }}</span>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Ticket Modal ────────────────────────────────────── -->
+<div class="ticket-overlay" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
+    <div class="ticket-modal">
+
+        <div class="ticket-modal-header">
+            <h6><i class="bi bi-receipt"></i> Vista previa del Ticket</h6>
+            <button class="btn-close-modal" onclick="cerrarTicket()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <!-- Zona que se imprime -->
+        <div id="ticketPrintArea">
+            <div id="ticketPreview">
+
+                <!-- Encabezado -->
+                <div class="ticket-store-name">MISHI</div>
+                <div class="ticket-store-sub">Sistema de Gestión de Compras</div>
+
+                <hr class="ticket-divider solid">
+
+                <!-- Datos de la compra -->
+                <div class="ticket-info-row">
+                    <span>Factura N°</span>
+                    <span>#{{ compra.numero_factura }}</span>
+                </div>
+                <div class="ticket-info-row">
+                    <span>Proveedor</span>
+                    <span>{{ compra.proveedor.nombre }}</span>
+                </div>
+                <div class="ticket-info-row">
+                    <span>Fecha</span>
+                    <span>{{ compra.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+
+                <hr class="ticket-divider">
+
+                <!-- Encabezado columnas -->
+                <div class="ticket-items-header">
+                    <span>Producto</span>
+                    <span style="text-align:center;">Cant</span>
+                    <span style="text-align:right;">P.Unit</span>
+                    <span style="text-align:right;">Subtotal</span>
+                </div>
+
+                <!-- Items -->
+                {% for d in detalles %}
+                <div class="ticket-item-row">
+                    <span class="item-name">{{ d.producto.nombre }}</span>
+                    <span style="text-align:center;">{{ d.cantidad }}</span>
+                    <span style="text-align:right;">${{ d.precio_unitario|floatformat:2 }}</span>
+                    <span style="text-align:right; font-weight:700;">${{ d.subtotal|floatformat:2 }}</span>
+                </div>
+                {% endfor %}
+
+                <hr class="ticket-divider solid">
+
+                <!-- Total -->
+                <div class="ticket-total-row">
+                    <span>TOTAL</span>
+                    <span>${{ compra.total|floatformat:2 }}</span>
+                </div>
+                <div class="ticket-items-summary">
+                    <span>Artículos:</span>
+                    <span>{{ compra.total_productos }}</span>
+                </div>
+
+                <hr class="ticket-divider">
+
+                <div class="ticket-footer-text">
+                    Documento generado por MISHI<br>
+                    {{ compra.fecha|date:"d/m/Y" }}<br>
+                    — Gracias por su compra —
+                </div>
+
+            </div>
+        </div>
+
+        <div class="ticket-modal-footer">
+            <button class="btn-cancel-modal" onclick="cerrarTicket()">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </button>
+            <button class="btn-print" onclick="imprimirTicket()">
+                <i class="bi bi-printer-fill"></i> Imprimir Ticket
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function abrirTicket() {
+        document.getElementById('ticketOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarTicket() {
+        document.getElementById('ticketOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function cerrarSiOverlay(e) {
+        if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+    }
+
+    function imprimirTicket() {
+        window.print();
+    }
+</script>
+{% endblock %}

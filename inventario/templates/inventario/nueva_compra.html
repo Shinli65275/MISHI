@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Compra - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-bag-plus"></i>
+            Nueva Compra
+        </h2>
+        <a href="{% url 'lista_compras' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Volver a Compras
+        </a>
+    </div>
+
+    <form id="compraForm" method="POST" action="{% url 'guardar_compra' %}">
+        {% csrf_token %}
+        <input type="hidden" name="data_compra" id="dataCompra">
+
+        <!-- Sección: Proveedor -->
+        <div class="card-section">
+            <h5>
+                <i class="bi bi-truck"></i>
+                Información del Proveedor
+            </h5>
+            <div class="form-group">
+                <label for="proveedorSelect">
+                    <i class="bi bi-truck"></i>
+                    Proveedor
+                </label>
+                <select id="proveedorSelect" name="proveedor" class="form-control">
+                    <option value="">— Seleccione un proveedor —</option>
+                    {% for proveedor in proveedores %}
+                        <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Sección: Agregar productos (oculto hasta elegir proveedor) -->
+        <div class="card-section" id="productoSection" style="display:none;">
+            <h5>
+                <i class="bi bi-box-seam"></i>
+                Agregar Producto
+            </h5>
+            <div class="form-row">
+                <!-- Producto -->
+                <div class="form-group">
+                    <label for="productoSelect">
+                        <i class="bi bi-box"></i>
+                        Producto
+                    </label>
+                    <select id="productoSelect" class="form-control">
+                        <option value="">— Seleccione un producto —</option>
+                    </select>
+                </div>
+
+                <!-- Cantidad -->
+                <div class="form-group">
+                    <label for="cantidadInput">
+                        <i class="bi bi-123"></i>
+                        Cantidad
+                    </label>
+                    <input
+                        type="number"
+                        id="cantidadInput"
+                        class="form-control"
+                        step="1"
+                        min="1"
+                        placeholder="0"
+                    >
+                </div>
+
+                <!-- Precio -->
+                <div class="form-group">
+                    <label for="precioInput">
+                        <i class="bi bi-tag"></i>
+                        Precio Unitario
+                    </label>
+                    <input
+                        type="number"
+                        id="precioInput"
+                        class="form-control"
+                        step="0.01"
+                        min="0.01"
+                        placeholder="0.00"
+                    >
+                </div>
+
+                <!-- Botón agregar -->
+                <button type="button" class="btn-add-product" onclick="agregarProducto()">
+                    <i class="bi bi-plus-circle"></i>
+                    Agregar
+                </button>
+            </div>
+        </div>
+
+        <!-- Sección: Tabla de productos agregados -->
+        <div class="card-section" id="tablaSection" style="display:none;">
+            <h5>
+                <i class="bi bi-list-check"></i>
+                Productos de la Compra
+            </h5>
+            <div class="table-responsive">
+                <table class="compras-table" id="tablaCompra">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-box"></i> Producto</th>
+                            <th><i class="bi bi-123"></i> Cantidad</th>
+                            <th><i class="bi bi-tag"></i> Precio Unit.</th>
+                            <th><i class="bi bi-cash"></i> Subtotal</th>
+                            <th><i class="bi bi-gear"></i> Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total -->
+            <div class="total-footer">
+                <span class="total-label">Total de la compra:</span>
+                <span class="total-value">$<span id="totalCompra">0.00</span></span>
+            </div>
+        </div>
+
+        <!-- Acciones finales -->
+        <div class="card-section">
+            <div id="submitWarning" class="alert-warning" style="display:none;">
+                <i class="bi bi-exclamation-triangle"></i>
+                Debes agregar al menos un producto antes de finalizar la compra.
+            </div>
+            <div class="form-submit-area">
+                <a href="{% url 'lista_compras' %}" class="btn-back">
+                    <i class="bi bi-x-circle"></i>
+                    Cancelar
+                </a>
+                <button type="submit" class="btn-submit" id="btnFinalizar">
+                    <i class="bi bi-bag-check"></i>
+                    Finalizar Compra
+                </button>
+            </div>
+
+
+
+        </div>
+
+    </form>
+</div>
+
+<script>
+    let productosAgregados = [];
+    let total = 0;
+
+    // Cargar productos al seleccionar proveedor
+    document.getElementById("proveedorSelect").addEventListener("change", function () {
+        const proveedorId = this.value;
+
+        if (!proveedorId) {
+            document.getElementById("productoSection").style.display = "none";
+            return;
+        }
+
+        fetch(`/inventario/productos-proveedor/${proveedorId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById("productoSelect");
+                select.innerHTML = '<option value="">— Seleccione un producto —</option>';
+
+                data.productos.forEach(prod => {
+                    const option = document.createElement("option");
+                    option.value = prod.id;
+                    option.text = prod.nombre;
+                    select.appendChild(option);
+                });
+
+                document.getElementById("productoSection").style.display = "block";
+            })
+            .catch(error => {
+                alert("Error cargando productos: " + error);
+                console.error(error);
+            });
+    });
+
+    function agregarProducto() {
+        const select = document.getElementById("productoSelect");
+        const cantidad = parseInt(document.getElementById("cantidadInput").value);
+        const precio = parseFloat(document.getElementById("precioInput").value);
+
+        if (!select.value) {
+            alert("Por favor seleccione un producto.");
+            return;
+        }
+
+        if (isNaN(cantidad) || isNaN(precio) || cantidad <= 0 || precio <= 0) {
+            alert("Por favor complete todos los campos con valores válidos.");
+            return;
+        }
+
+        const nombre = select.selectedOptions[0].text;
+        const id = select.value;
+        const subtotal = cantidad * precio;
+        total += subtotal;
+
+        productosAgregados.push({ id, cantidad, precio, subtotal });
+
+        // Agregar fila
+        const row = document.createElement("tr");
+        const rowIndex = productosAgregados.length - 1;
+        row.id = `row-${rowIndex}`;
+        row.innerHTML = `
+            <td>
+                <div class="nombre-producto">
+                    <div class="prod-icon"><i class="bi bi-box"></i></div>
+                    ${nombre}
+                </div>
+            </td>
+            <td>${cantidad}</td>
+            <td>$${precio.toFixed(2)}</td>
+            <td><span class="total-badge">$${subtotal.toFixed(2)}</span></td>
+            <td>
+                <button type="button" class="btn-remove" onclick="eliminarProducto(${rowIndex}, ${subtotal})">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </td>
+        `;
+
+        document.getElementById("tablaBody").appendChild(row);
+        document.getElementById("totalCompra").innerText = total.toFixed(2);
+        document.getElementById("dataCompra").value = JSON.stringify(productosAgregados);
+
+        // Mostrar tabla si estaba oculta
+        document.getElementById("tablaSection").style.display = "block";
+
+        // Limpiar campos
+        document.getElementById("cantidadInput").value = "";
+        document.getElementById("precioInput").value = "";
+        select.value = "";
+    }
+
+    function eliminarProducto(index, subtotal) {
+        productosAgregados.splice(index, 1);
+        total -= subtotal;
+        if (total < 0) total = 0;
+
+        const row = document.getElementById(`row-${index}`);
+        if (row) row.remove();
+
+        // Renumerar IDs de filas restantes
+        const rows = document.querySelectorAll("#tablaBody tr");
+        rows.forEach((r, i) => { r.id = `row-${i}`; });
+
+        document.getElementById("totalCompra").innerText = total.toFixed(2);
+        document.getElementById("dataCompra").value = JSON.stringify(productosAgregados);
+
+        if (productosAgregados.length === 0) {
+            document.getElementById("tablaSection").style.display = "none";
+        }
+    }
+
+    // Validación al enviar
+    document.getElementById("compraForm").addEventListener("submit", function (e) {
+        if (productosAgregados.length === 0) {
+            e.preventDefault();
+            document.getElementById("submitWarning").style.display = "flex";
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        }
+    });
+</script>
+{% endblock %}

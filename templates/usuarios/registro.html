@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Crear cuenta</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <h3>Datos del usuario</h3>
+    <input type="text" name="username" placeholder="Usuario"><br>
+    <input type="password" name="password" placeholder="Contraseña"><br>
+
+    <h3>Datos del negocio</h3>
+    <input type="text" name="nombre_negocio" placeholder="Nombre del negocio"><br>
+    <input type="text" name="direccion" placeholder="Dirección"><br>
+    <input type="text" name="telefono" placeholder="Teléfono"><br>
+
+    <button type="submit">Crear cuenta</button>
+</form>
+
+{% endblock %}

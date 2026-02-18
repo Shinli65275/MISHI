@@ -1,0 +1,574 @@
+{% extends 'base.html' %}
+
+{% block title %}Agregar Producto - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    /* ── Layout dos columnas ────────────────────────── */
+    .create-layout {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    /* ── Card formulario ────────────────────────────── */
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .form-card h5 {
+        color: #2c3e50;
+        margin: 0 0 25px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* ── Campos ─────────────────────────────────────── */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        color: #2c3e50;
+        width: 100%;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control::placeholder { color: #adb5bd; }
+
+    /* Dos columnas dentro del form */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    /* Prefijo $ */
+    .input-prefix-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-prefix {
+        position: absolute;
+        left: 14px;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 1rem;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .input-prefix-wrapper .form-control { padding-left: 30px; }
+
+    .field-hint {
+        font-size: 0.78rem;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: -2px;
+    }
+
+    .section-divider {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #adb5bd;
+        margin: 24px 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #f0f0f0;
+    }
+
+    /* ── Botones finales ────────────────────────────── */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 10px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        padding: 13px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ── Sidebar preview ────────────────────────────── */
+    .sidebar-card {
+        background: white;
+        border-radius: 15px;
+        padding: 24px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+    .sidebar-card h6 {
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .product-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .preview-icon {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        transition: transform 0.2s;
+    }
+
+    .preview-icon.pulse {
+        animation: pulse 0.3s ease;
+    }
+
+    @keyframes pulse {
+        0%   { transform: scale(1); }
+        50%  { transform: scale(1.08); }
+        100% { transform: scale(1); }
+    }
+
+    .preview-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        word-break: break-word;
+        min-height: 1.4em;
+    }
+
+    .preview-precio {
+        font-size: 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .preview-proveedor {
+        font-size: 0.82rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stock-badge {
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stock-ok    { background: #e8f5e9; color: #2e7d32; }
+    .stock-low   { background: #fff3e0; color: #e65100; }
+    .stock-empty { background: #fdecea; color: #c62828; }
+
+    /* Tips */
+    .tip-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #6c757d;
+        line-height: 1.4;
+    }
+
+    .tip-item i {
+        color: #667eea;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 992px) {
+        .create-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-card {
+            position: static;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .sidebar-card h6 { grid-column: 1 / -1; }
+        .product-preview { grid-column: 1; }
+        .tip-list { grid-column: 2; margin-top: 0; }
+    }
+
+    @media (max-width: 768px) {
+        .page-header { padding: 20px; }
+        .page-header h2 { font-size: 1.4rem; }
+        .btn-back { width: 100%; justify-content: center; }
+        .form-card { padding: 22px; }
+        .form-row { grid-template-columns: 1fr; }
+        .form-actions { flex-direction: column-reverse; }
+        .btn-submit, .btn-back { width: 100%; justify-content: center; }
+        .sidebar-card { grid-template-columns: 1fr; }
+        .product-preview, .tip-list { grid-column: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-plus-circle"></i>
+            Agregar Producto
+        </h2>
+        <a href="{% url 'lista_productos' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Volver a Productos
+        </a>
+    </div>
+
+    <div class="create-layout">
+
+        <!-- ── Formulario ── -->
+        <div class="form-card">
+            <h5>
+                <i class="bi bi-box-seam"></i>
+                Datos del Producto
+            </h5>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Nombre -->
+                <div class="form-group">
+                    <label for="nombre">
+                        <i class="bi bi-box"></i>
+                        Nombre <span style="color:#dc3545;">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        class="form-control"
+                        placeholder="Nombre del producto"
+                        required
+                        autofocus
+                        oninput="actualizarPreview()"
+                    >
+                </div>
+
+                <div class="section-divider">Precio y Stock inicial</div>
+
+                <div class="form-row">
+                    <!-- Precio venta -->
+                    <div class="form-group">
+                        <label for="precio_venta">
+                            <i class="bi bi-tag"></i>
+                            Precio de Venta <span style="color:#dc3545;">*</span>
+                        </label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input
+                                type="number"
+                                id="precio_venta"
+                                name="precio_venta"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                required
+                                oninput="actualizarPreview()"
+                            >
+                        </div>
+                    </div>                        
+                </div>
+
+                <div class="section-divider">Proveedor</div>
+
+                <!-- Proveedor -->
+                <div class="form-group">
+                    <label for="proveedor">
+                        <i class="bi bi-truck"></i>
+                        Proveedor
+                    </label>
+                    <select
+                        id="proveedor"
+                        name="proveedor"
+                        class="form-control"
+                        onchange="actualizarPreview()"
+                    >
+                        <option value="">— Sin proveedor asignado —</option>
+                        {% for proveedor in proveedores %}
+                        <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Control -->
+                <div class="form-group">
+                                                <label for="stock">
+                            <i class="bi bi-layers"></i>
+                            Stock Inicial 
+                        </label>
+                        <input
+                            type="number"
+                            id="stock"
+                            name="stock"
+                            class="form-control"
+                            min="0"
+                            placeholder="0"
+                            required
+                            oninput="actualizarPreview()"
+                        >
+                        <span class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            El stock minimo marca el punto de alerta para reabastecer (opcional)
+                        </span>
+                        <label for="stock_maximo">
+                            <i class="bi bi-layers"></i>
+                            Stock Maximo 
+                        </label>
+                        <input
+                            type="number"
+                            id="stock_maximo"
+                            name="stock_maximo"
+                            class="form-control"
+                            min="0"
+                            placeholder="0"
+                            required
+                            oninput="actualizarPreview()"
+                        >
+                        <span class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            El stock maximo marca el límite máximo de existencias recomendadas (opcional)
+                        </span>
+                </div>
+                <!-- Acciones -->
+                <div class="form-actions">
+                    <a href="{% url 'lista_productos' %}" class="btn-back">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Sidebar ── -->
+        <div class="sidebar-card">
+            <h6>
+                <i class="bi bi-eye"></i>
+                Vista Previa
+            </h6>
+
+            <!-- Preview en vivo -->
+            <div class="product-preview">
+                <div class="preview-icon" id="previewIcon">
+                    <i class="bi bi-box"></i>
+                </div>
+                <div class="preview-name" id="previewNombre">Nombre del producto</div>
+                <div class="preview-precio" id="previewPrecio">$0.00</div>
+                <div class="preview-proveedor" id="previewProveedor">
+                    <i class="bi bi-truck"></i>
+                    Sin proveedor
+                </div>
+                <span class="stock-badge stock-empty" id="previewStock">
+                    <i class="bi bi-layers"></i>
+                    Stock: 0
+                </span>
+            </div>
+
+            <!-- Tips -->
+            <div class="tip-list">
+                <div class="tip-item">
+                    <i class="bi bi-lightbulb"></i>
+                    <span>El stock inicial solo se define al crear. Después se gestiona desde las compras.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Puedes editar nombre, precio y proveedor en cualquier momento desde la lista.</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-tag"></i>
+                    <span>El precio de venta es el que se mostrará al consultar el inventario.</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function actualizarPreview() {
+        const nombre  = document.getElementById('nombre').value.trim();
+        const precio  = parseFloat(document.getElementById('precio_venta').value);
+        const stock   = parseInt(document.getElementById('stock').value);
+        const select  = document.getElementById('proveedor');
+        const provNombre = select.options[select.selectedIndex]?.text || 'Sin proveedor';
+
+        // Nombre
+        document.getElementById('previewNombre').textContent =
+            nombre || 'Nombre del producto';
+
+        // Precio
+        document.getElementById('previewPrecio').textContent =
+            isNaN(precio) ? '$0.00' : '$' + precio.toFixed(2);
+
+        // Proveedor
+        document.getElementById('previewProveedor').innerHTML =
+            `<i class="bi bi-truck"></i> ${select.value ? provNombre : 'Sin proveedor'}`;
+
+        // Stock badge
+        const badge = document.getElementById('previewStock');
+        badge.className = 'stock-badge';
+        if (isNaN(stock) || stock <= 0) {
+            badge.classList.add('stock-empty');
+            badge.innerHTML = '<i class="bi bi-x-circle-fill"></i> Sin stock';
+        } else if (stock <= 5) {
+            badge.classList.add('stock-low');
+            badge.innerHTML = `<i class="bi bi-exclamation-circle-fill"></i> Stock: ${stock} — Bajo`;
+        } else {
+            badge.classList.add('stock-ok');
+            badge.innerHTML = `<i class="bi bi-check-circle-fill"></i> Stock: ${stock}`;
+        }
+
+        // Pulse en el ícono
+        const icon = document.getElementById('previewIcon');
+        icon.classList.remove('pulse');
+        void icon.offsetWidth; // reflow
+        icon.classList.add('pulse');
+    }
+</script>
+{% endblock %}

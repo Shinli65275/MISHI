@@ -1,0 +1,533 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Producto - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-header h2 span.producto-nombre {
+        color: #667eea;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    /* ── Layout dos columnas ────────────────────────── */
+    .edit-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    /* ── Card formulario ────────────────────────────── */
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .form-card h5 {
+        color: #2c3e50;
+        margin: 0 0 25px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* ── Campos ─────────────────────────────────────── */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        color: #2c3e50;
+        width: 100%;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control::placeholder { color: #adb5bd; }
+
+    /* Prefijo $ */
+    .input-prefix-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-prefix {
+        position: absolute;
+        left: 14px;
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 1rem;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .input-prefix-wrapper .form-control { padding-left: 30px; }
+
+    /* Hint bajo el campo */
+    .field-hint {
+        font-size: 0.78rem;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: -2px;
+    }
+
+    /* Separador de sección */
+    .section-divider {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #adb5bd;
+        margin: 24px 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #f0f0f0;
+    }
+
+    /* ── Botones finales ────────────────────────────── */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 10px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        padding: 13px 28px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    /* ── Card lateral info ──────────────────────────── */
+    .info-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 15px;
+        padding: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .sidebar-card h6 {
+        color: #2c3e50;
+        margin: 0 0 16px 0;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* Preview del producto */
+    .product-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        text-align: center;
+    }
+
+    .preview-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+
+    .preview-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+        word-break: break-word;
+    }
+
+    .preview-precio {
+        font-size: 1.4rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .preview-meta {
+        font-size: 0.8rem;
+        color: #adb5bd;
+    }
+
+    /* Stock badge */
+    .stock-badge {
+        padding: 5px 13px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stock-ok    { background: #e8f5e9; color: #2e7d32; }
+    .stock-low   { background: #fff3e0; color: #e65100; }
+    .stock-empty { background: #fdecea; color: #c62828; }
+
+    /* Datos actuales */
+    .current-data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.87rem;
+    }
+
+    .current-data-row:last-child { border-bottom: none; }
+
+    .current-data-row .label { color: #6c757d; }
+    .current-data-row .value { font-weight: 600; color: #2c3e50; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 992px) {
+        .edit-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .info-sidebar {
+            order: -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header { padding: 20px; }
+        .page-header h2 { font-size: 1.3rem; }
+        .btn-back { width: 100%; justify-content: center; }
+
+        .form-card { padding: 22px; }
+        .info-sidebar { grid-template-columns: 1fr; }
+
+        .form-actions { flex-direction: column-reverse; }
+        .btn-submit, .btn-back { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-pencil-square"></i>
+            Editar &nbsp;<span class="producto-nombre">{{ producto.nombre }}</span>
+        </h2>
+        <a href="{% url 'lista_productos' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Volver a Productos
+        </a>
+    </div>
+
+    <div class="edit-layout">
+
+        <!-- ── Formulario principal ── -->
+        <div class="form-card">
+            <h5>
+                <i class="bi bi-sliders"></i>
+                Información del Producto
+            </h5>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <!-- Nombre -->
+                <div class="form-group">
+                    <label for="nombre">
+                        <i class="bi bi-box"></i>
+                        Nombre <span style="color:#dc3545;">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        class="form-control"
+                        value="{{ producto.nombre }}"
+                        placeholder="Nombre del producto"
+                        required
+                        autofocus
+                        oninput="actualizarPreview()"
+                    >
+                </div>
+
+                <!-- Código / Barcode -->
+                <div class="form-group">
+                    <label for="codigo">
+                        <i class="bi bi-upc-scan"></i>
+                        Código / Barcode
+                    </label>
+                    <input
+                        type="text"
+                        id="codigo"
+                        name="codigo"
+                        class="form-control"
+                        value="{{ producto.codigo }}"
+                        placeholder="Ej: 7501234567890"
+                    >
+                    <span class="field-hint">
+                        <i class="bi bi-info-circle"></i>
+                        Código de barras o referencia interna
+                    </span>
+                </div>
+
+                <div class="section-divider">Precio</div>
+
+                <!-- Precio venta -->
+                <div class="form-group">
+                    <label for="precio_venta">
+                        <i class="bi bi-tag"></i>
+                        Precio de Venta <span style="color:#dc3545;">*</span>
+                    </label>
+                    <div class="input-prefix-wrapper">
+                        <span class="input-prefix">$</span>
+                        <input
+                            type="number"
+                            id="precio_venta"
+                            name="precio_venta"
+                            class="form-control"
+                            step="0.01"
+                            min="0"
+                            value="{{ producto.precio_venta }}"
+                            placeholder="0.00"
+                            required
+                            oninput="actualizarPreview()"
+                        >
+                    </div>
+                </div>
+
+                <div class="section-divider">Proveedor</div>
+
+                <!-- Proveedor -->
+                <div class="form-group">
+                    <label for="proveedor">
+                        <i class="bi bi-truck"></i>
+                        Proveedor
+                    </label>
+                    <select id="proveedor" name="proveedor" class="form-control">
+                        <option value="">— Sin proveedor asignado —</option>
+                        {% for p in proveedores %}
+                        <option value="{{ p.id }}"
+                            {% if producto.proveedor and producto.proveedor.id == p.id %}selected{% endif %}>
+                            {{ p.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Acciones -->
+                <div class="form-actions">
+                    <a href="{% url 'lista_productos' %}" class="btn-back">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Sidebar ── -->
+        <div class="info-sidebar">
+
+            <!-- Preview -->
+            <div class="sidebar-card">
+                <h6>
+                    <i class="bi bi-eye"></i>
+                    Vista Previa
+                </h6>
+                <div class="product-preview">
+                    <div class="preview-icon">
+                        <i class="bi bi-box"></i>
+                    </div>
+                    <div class="preview-name" id="previewNombre">{{ producto.nombre }}</div>
+                    <div class="preview-precio" id="previewPrecio">${{ producto.precio_venta|floatformat:2 }}</div>
+                    <div class="preview-meta">
+                        Código: <strong>{{ producto.codigo|default:"—" }}</strong>
+                    </div>
+                    {% if producto.stock is not None %}
+                    <div>
+                        {% if producto.stock <= 0 %}
+                            <span class="stock-badge stock-empty">
+                                <i class="bi bi-x-circle-fill"></i> Agotado
+                            </span>
+                        {% elif producto.stock <= 5 %}
+                            <span class="stock-badge stock-low">
+                                <i class="bi bi-exclamation-circle-fill"></i>
+                                Stock: {{ producto.stock }} — Bajo
+                            </span>
+                        {% else %}
+                            <span class="stock-badge stock-ok">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Stock: {{ producto.stock }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Datos actuales -->
+            <div class="sidebar-card">
+                <h6>
+                    <i class="bi bi-info-circle"></i>
+                    Datos Actuales
+                </h6>
+                <div class="current-data-row">
+                    <span class="label">Nombre</span>
+                    <span class="value">{{ producto.nombre }}</span>
+                </div>
+                <div class="current-data-row">
+                    <span class="label">Precio venta</span>
+                    <span class="value">${{ producto.precio_venta|floatformat:2 }}</span>
+                </div>
+                <div class="current-data-row">
+                    <span class="label">Código</span>
+                    <span class="value">{{ producto.codigo|default:"—" }}</span>
+                </div>
+                <div class="current-data-row">
+                    <span class="label">Proveedor</span>
+                    <span class="value">{{ producto.proveedor.nombre|default:"—" }}</span>
+                </div>
+                {% if producto.stock is not None %}
+                <div class="current-data-row">
+                    <span class="label">Stock actual</span>
+                    <span class="value">{{ producto.stock }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function actualizarPreview() {
+        const nombre = document.getElementById('nombre').value.trim();
+        const precio = parseFloat(document.getElementById('precio_venta').value);
+
+        const elNombre = document.getElementById('previewNombre');
+        const elPrecio = document.getElementById('previewPrecio');
+
+        elNombre.textContent = nombre || 'Nombre del producto';
+        elPrecio.textContent = isNaN(precio) ? '$0.00' : '$' + precio.toFixed(2);
+    }
+</script>
+{% endblock %}

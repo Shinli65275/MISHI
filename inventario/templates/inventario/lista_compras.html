@@ -1,0 +1,643 @@
+<!-- compras/lista_compras.html -->
+{% extends 'base.html' %}
+
+{% block title %}Compras - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .page-header h2 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    /* Filtros */
+    .filters-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .filters-header h5 {
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .toggle-filters {
+        background: none;
+        border: none;
+        color: #667eea;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        transition: all 0.3s;
+    }
+
+    .toggle-filters:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .filters-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .filters-content.collapsed {
+        display: none;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .filter-group label {
+        color: #495057;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .filter-input {
+        padding: 10px 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .btn-filter {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-clear {
+        padding: 10px 20px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+
+    .btn-clear:hover {
+        background: #f8f9fa;
+        color: #495057;
+        border-color: #dee2e6;
+    }
+
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .filter-tag {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-tag i {
+        cursor: pointer;
+    }
+
+    .filter-tag i:hover {
+        color: #d32f2f;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .compras-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .compras-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .compras-table thead th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .compras-table tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s;
+    }
+
+    .compras-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .compras-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .compras-table tbody td {
+        padding: 15px;
+        color: #495057;
+    }
+
+    .compra-id {
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .proveedor-name {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+    .proveedor-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .total-badge {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .productos-count {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .fecha {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .btn-view {
+        padding: 8px 16px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+    }
+
+    .btn-view:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #adb5bd;
+        margin-bottom: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .filters-card {
+            padding: 20px;
+        }
+
+        .filters-content {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-filter,
+        .btn-clear {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .compras-table thead th,
+        .compras-table tbody td {
+            padding: 10px;
+            font-size: 0.85rem;
+        }
+
+        .compras-table thead th {
+            white-space: nowrap;
+        }
+
+        .proveedor-icon {
+            display: none;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .compras-table {
+            font-size: 0.8rem;
+        }
+
+        .btn-view {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-bag"></i>
+            Compras
+        </h2>
+        <a href="{% url 'nueva_compra' %}" class="btn-add">
+            <i class="bi bi-plus-circle"></i>
+            Nueva Compra
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <div class="filters-header">
+            <h5>
+                <i class="bi bi-funnel"></i>
+                Filtros de Búsqueda
+            </h5>
+            <button class="toggle-filters" onclick="toggleFilters()">
+                <i class="bi bi-chevron-down" id="toggleIcon"></i>
+                <span id="toggleText">Ocultar</span>
+            </button>
+        </div>
+
+        <form method="GET" action="{% url 'lista_compras' %}" id="filterForm">
+            <div class="filters-content" id="filtersContent">
+                <!-- Número de Factura -->
+                <div class="filter-group">
+                    <label for="factura">
+                        <i class="bi bi-receipt"></i>
+                        Número de Factura
+                    </label>
+                    <input 
+                        type="text" 
+                        id="factura"
+                        name="factura" 
+                        class="filter-input" 
+                        placeholder="Ej: 12345"
+                        value="{{ request.GET.factura }}"
+                    >
+                </div>
+
+                <!-- Proveedor -->
+                <div class="filter-group">
+                    <label for="proveedor">
+                        <i class="bi bi-truck"></i>
+                        Proveedor
+                    </label>
+                    <select name="proveedor" id="proveedor" class="filter-input">
+                        <option value="">Todos los proveedores</option>
+                        {% for proveedor in proveedores %}
+                        <option value="{{ proveedor.id }}" {% if request.GET.proveedor == proveedor.id|stringformat:"s" %}selected{% endif %}>
+                            {{ proveedor.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Fecha Desde -->
+                <div class="filter-group">
+                    <label for="fecha_desde">
+                        <i class="bi bi-calendar-event"></i>
+                        Fecha Desde
+                    </label>
+                    <input 
+                        type="date" 
+                        id="fecha_desde"
+                        name="fecha_desde" 
+                        class="filter-input"
+                        value="{{ request.GET.fecha_desde }}"
+                    >
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter">
+                        <i class="bi bi-search"></i>
+                        Buscar
+                    </button>
+                    <a href="{% url 'lista_compras' %}" class="btn-clear">
+                        <i class="bi bi-x-circle"></i>
+                        Limpiar
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filtros Activos -->
+            {% if request.GET.factura or request.GET.proveedor or request.GET.fecha_desde or request.GET.fecha_hasta %}
+            <div class="active-filters">
+                {% if request.GET.factura %}
+                <span class="filter-tag">
+                    <strong>Factura:</strong> {{ request.GET.factura }}
+                    <i class="bi bi-x" onclick="removeFilter('factura')"></i>
+                </span>
+                {% endif %}
+
+                {% if request.GET.proveedor %}
+                <span class="filter-tag">
+                    <strong>Proveedor:</strong> 
+                    {% for proveedor in proveedores %}
+                        {% if proveedor.id|stringformat:"s" == request.GET.proveedor %}
+                            {{ proveedor.nombre }}
+                        {% endif %}
+                    {% endfor %}
+                    <i class="bi bi-x" onclick="removeFilter('proveedor')"></i>
+                </span>
+                {% endif %}
+
+                {% if request.GET.fecha_desde %}
+                <span class="filter-tag">
+                    <strong>Desde:</strong> {{ request.GET.fecha_desde }}
+                    <i class="bi bi-x" onclick="removeFilter('fecha_desde')"></i>
+                </span>
+                {% endif %}
+
+                {% if request.GET.fecha_hasta %}
+                <span class="filter-tag">
+                    <strong>Hasta:</strong> {{ request.GET.fecha_hasta }}
+                    <i class="bi bi-x" onclick="removeFilter('fecha_hasta')"></i>
+                </span>
+                {% endif %}
+            </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Tabla de Compras -->
+    {% if compras %}
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="compras-table">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-hash"></i> Factura</th>
+                        <th><i class="bi bi-truck"></i> Proveedor</th>
+                        <th><i class="bi bi-box"></i> Productos</th>
+                        <th><i class="bi bi-cash"></i> Total</th>
+                        <th><i class="bi bi-calendar"></i> Fecha</th>
+                        <th><i class="bi bi-gear"></i> Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for compra in compras %}
+                    <tr>
+                        <td>
+                            <span class="compra-id">#{{ compra.numero_factura }}</span>
+                        </td>
+                        <td>
+                            <div class="proveedor-name">
+                                <div class="proveedor-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                {{ compra.proveedor.nombre }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="productos-count">
+                                {{ compra.total_productos }} Productos
+                            </span>
+                        </td>
+                        <td>
+                            <span class="total-badge">
+                                ${{ compra.total|floatformat:2 }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fecha">
+                                <i class="bi bi-calendar3"></i>
+                                {{ compra.fecha|date:"d/m/Y H:i" }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'detalle_compra' compra.id %}" class="btn-view">
+                                <i class="bi bi-eye"></i>
+                                Ver Detalle
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="empty-state">
+        <i class="bi bi-bag-x"></i>
+        <h3>No se encontraron compras</h3>
+        {% if request.GET.factura or request.GET.proveedor or request.GET.fecha_desde or request.GET.fecha_hasta %}
+        <p>No hay resultados con los filtros aplicados</p>
+        <a href="{% url 'lista_compras' %}" class="btn-clear">
+            <i class="bi bi-x-circle"></i>
+            Limpiar Filtros
+        </a>
+        {% else %}
+        <p>Comienza registrando tu primera compra</p>
+        <a href="{% url 'nueva_compra' %}" class="btn-add">
+            <i class="bi bi-plus-circle"></i>
+            Registrar Primera Compra
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Toggle filtros
+    function toggleFilters() {
+        const content = document.getElementById('filtersContent');
+        const icon = document.getElementById('toggleIcon');
+        const text = document.getElementById('toggleText');
+        
+        content.classList.toggle('collapsed');
+        
+        if (content.classList.contains('collapsed')) {
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-up');
+            text.textContent = 'Mostrar';
+        } else {
+            icon.classList.remove('bi-chevron-up');
+            icon.classList.add('bi-chevron-down');
+            text.textContent = 'Ocultar';
+        }
+    }
+
+    // Remover filtro individual
+    function removeFilter(filterName) {
+        const url = new URL(window.location);
+        url.searchParams.delete(filterName);
+        window.location = url.toString();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,7 @@
+<form method="POST">
+    {% csrf_token %}
+    <input type="text" name="nombre" placeholder="Nombre del negocio">
+    <input type="text" name="direccion" placeholder="Dirección">
+    <input type="text" name="telefono" placeholder="Teléfono">
+    <button type="submit">Crear</button>
+</form>

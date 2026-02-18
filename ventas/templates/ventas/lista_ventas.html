@@ -1,0 +1,27 @@
+<h2>Historial de Ventas</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Total Productos</th>
+        <th>Total</th>
+        <th>Fecha</th>
+        <th>Acción</th>
+    </tr>
+
+    {% for venta in ventas %}
+    <tr>
+        <td>{{ venta.id }}</td>
+        <td>{{ venta.total_productos }}</td>
+        <td>${{ venta.total }}</td>
+        <td>{{ venta.fecha }}</td>
+        <td>
+            <a href="{% url 'detalle_venta' venta.id %}">
+                Ver
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a href="{% url 'nueva_venta' %}">Nueva Venta</a>

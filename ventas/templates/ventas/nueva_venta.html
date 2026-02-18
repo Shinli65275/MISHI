@@ -1,0 +1,185 @@
+<h2>Nueva Venta</h2>
+
+<input 
+    type="text" 
+    id="codigo_input" 
+    placeholder="Escanea código..."
+    autofocus
+>
+
+<select id="selector_manual">
+    <option value="">Seleccionar producto manualmente</option>
+    {% for producto in productos %}
+        <option 
+            value="{{ producto.id }}"
+            data-precio="{{ producto.precio_venta }}"
+            data-nombre="{{ producto.nombre }}">
+            {{ producto.nombre }}
+        </option>
+    {% endfor %}
+</select>
+
+<br><br>
+
+<table border="1" id="tabla_carrito">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h3>Total: $<span id="total_general">0.00</span></h3>
+
+<button onclick="finalizarVenta()">Finalizar Venta</button>
+
+<script>
+let carrito = [];
+
+/* ------------------ LECTOR ------------------ */
+document.getElementById("codigo_input")
+.addEventListener("keypress", function(e){
+
+    if(e.key === "Enter"){
+
+        let codigo = this.value;
+
+        fetch(`/ventas/buscar-producto/?codigo=${codigo}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if(data.error){
+                alert(data.error);
+                return;
+            }
+
+            agregarProducto(data.id, data.nombre, data.precio);
+            this.value = "";
+        });
+    }
+});
+
+/* ------------------ SELECT MANUAL ------------------ */
+document.getElementById("selector_manual")
+.addEventListener("change", function(){
+
+    let option = this.options[this.selectedIndex];
+
+    if(this.value){
+
+        agregarProducto(
+            parseInt(this.value),
+            option.dataset.nombre,
+            parseFloat(option.dataset.precio)
+        );
+
+        this.value = "";
+    }
+});
+
+/* ------------------ AGREGAR ------------------ */
+function agregarProducto(id, nombre, precio){
+
+    let existente = carrito.find(p => p.id === id);
+
+    if(existente){
+        existente.cantidad += 1;
+    } else {
+        carrito.push({
+            id,
+            nombre,
+            precio,
+            cantidad: 1
+        });
+    }
+
+    renderCarrito();
+}
+
+/* ------------------ RENDER ------------------ */
+function renderCarrito(){
+
+    let tbody = document.querySelector("#tabla_carrito tbody");
+    tbody.innerHTML = "";
+
+    let total = 0;
+
+    carrito.forEach((p, index) => {
+
+        let subtotal = p.cantidad * p.precio;
+        total += subtotal;
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${p.nombre}</td>
+                <td>
+                    <input type="number" 
+                        value="${p.cantidad}" 
+                        min="1"
+                        onchange="cambiarCantidad(${index}, this.value)">
+                </td>
+                <td>$${p.precio}</td>
+                <td>$${subtotal.toFixed(2)}</td>
+                <td>
+                    <button onclick="eliminarProducto(${index})">
+                        X
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    document.getElementById("total_general").innerText = total.toFixed(2);
+}
+
+/* ------------------ CAMBIAR CANTIDAD ------------------ */
+function cambiarCantidad(index, valor){
+
+    carrito[index].cantidad = parseInt(valor);
+    renderCarrito();
+}
+
+/* ------------------ ELIMINAR ------------------ */
+function eliminarProducto(index){
+
+    carrito.splice(index, 1);
+    renderCarrito();
+}
+
+/* ------------------ FINALIZAR ------------------ */
+function finalizarVenta(){
+
+    if(carrito.length === 0){
+        alert("No hay productos en el carrito");
+        return;
+    }
+
+    fetch("/ventas/guardar/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            data_venta: carrito
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.error){
+            alert(data.error);
+            return;
+        }
+
+        alert("Venta realizada correctamente");
+        carrito = [];
+        renderCarrito();
+    });
+}
+</script>
