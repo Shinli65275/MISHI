@@ -75,7 +75,7 @@ class Lote(models.Model):
 
     def save(self, *args, **kwargs):
 
-        hoy = (timezone.now() + timedelta(days=10)).strftime("%Y%m%d")
+        hoy = timezone.now().strftime("%Y%m%d")
         letras_producto = self.producto.nombre[:3].upper()
         negocio_id = str(self.negocio.id).zfill(2)
 

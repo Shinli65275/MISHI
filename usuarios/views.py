@@ -8,6 +8,14 @@ from negocios.utils import get_negocio_activo, get_rol_usuario
 from .models import UsuarioNegocio
 from django.contrib.auth import update_session_auth_hash
 
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+
+from negocios.utils import get_negocio_activo
+from .models import UsuarioNegocio
+
 
 def registro(request):
     if request.method == "POST":
@@ -99,14 +107,48 @@ def crear_empleado(request):
     return render(request, "usuarios/crear_empleado.html")
 
 
+
+
 @login_required
-def perfil_usuario(request):
+def perfil(request):
     negocio = get_negocio_activo(request)
-    rol = get_rol_usuario(request)
-    return render(request, "usuarios/perfil.html", {
-        "negocio": negocio,
-        "rol": rol
-    })
+    rol = None
+    if negocio:
+        try:
+            rel = UsuarioNegocio.objects.get(usuario=request.user, negocio=negocio)
+            rol = rel.rol
+        except UsuarioNegocio.DoesNotExist:
+            pass
+
+    return render(request, "usuarios/perfil.html", {"negocio": negocio, "rol": rol})
+
+@login_required
+def cambiar_password(request):
+    if request.method != "POST":
+        return redirect("perfil")
+
+    user         = request.user
+    old_password = request.POST.get("old_password", "")
+    new_pass1    = request.POST.get("new_password1", "")
+    new_pass2    = request.POST.get("new_password2", "")
+
+    if not user.check_password(old_password):
+        messages.error(request, "La contraseña actual es incorrecta.")
+        return redirect("perfil")
+
+    if new_pass1 != new_pass2:
+        messages.error(request, "Las contraseñas nuevas no coinciden.")
+        return redirect("perfil")
+
+    if len(new_pass1) < 8:
+        messages.error(request, "La contraseña debe tener al menos 8 caracteres.")
+        return redirect("perfil")
+
+    user.set_password(new_pass1)
+    user.save()
+    update_session_auth_hash(request, user)   # mantiene la sesión activa
+    messages.success(request, "Contraseña cambiada correctamente.")
+    return redirect("perfil")
 
 @login_required
 def lista_empleados(request):

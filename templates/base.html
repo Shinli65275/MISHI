@@ -885,7 +885,7 @@
                             <span class="ms-2 text-dark">{{ user.username }}</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'perfil_usuario' %}"><i class="bi bi-person"></i> Mi Perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="bi bi-person"></i> Mi Perfil</a></li>
 
                             <!-- Lista de Empleados - Solo ADMIN -->
                             {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}

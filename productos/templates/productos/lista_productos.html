@@ -46,12 +46,12 @@
         color: white;
     }
 
-    /* ── Cards de stats ─────────────────────────────── */
+    /* ── Stats ── */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 20px;
-        margin-bottom: 25px;
+        margin-bottom: 22px;
     }
 
     .stat-card {
@@ -62,46 +62,164 @@
         display: flex;
         align-items: center;
         gap: 14px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 2px solid transparent;
     }
+
+    .stat-card:hover        { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+    .stat-card.active-filter { border-color: #667eea; background: #f8f9ff; }
 
     .stat-icon {
-        width: 48px;
-        height: 48px;
+        width: 48px; height: 48px;
         border-radius: 12px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.2rem;
-        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 1.2rem; flex-shrink: 0;
     }
 
-    .stat-icon.warning { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-    .stat-icon.success { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-icon.warning { background: linear-gradient(135deg, #f7971e, #ffd200); }
+    .stat-icon.danger  { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-icon.success { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
 
-    .stat-content {
+    .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: #2c3e50; line-height: 1.1; }
+
+    /* ── Barra de filtros ── */
+    .filtros-bar {
+        background: white;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+    .filtro-search {
+        flex: 1;
+        min-width: 200px;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 5px;
     }
 
-    .stat-label {
-        font-size: 0.75rem;
+    .filtro-search label {
+        font-size: 0.72rem;
+        font-weight: 700;
         color: #6c757d;
-        font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    .stat-value {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #2c3e50;
-        line-height: 1.1;
+    .search-wrap { position: relative; }
+
+    .search-wrap i {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #adb5bd;
+        pointer-events: none;
     }
 
-    /* ── Tabla ──────────────────────────────────────── */
+    .filtro-input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-size: 0.87rem;
+        color: #2c3e50;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: white;
+    }
+
+    .filtro-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+    /* Chips de stock */
+    .stock-chips-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .stock-chips-wrap label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stock-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+
+    .chip {
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #6c757d;
+        transition: all 0.18s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .chip:hover { border-color: #667eea; color: #667eea; }
+    .chip.active       { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; }
+    .chip.active-green { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #155724; border-color: transparent; }
+    .chip.active-orange{ background: linear-gradient(135deg, #f7971e, #ffd200); color: #5d3a00; border-color: transparent; }
+    .chip.active-red   { background: linear-gradient(135deg, #f5576c, #f093fb); color: white; border-color: transparent; }
+
+    /* Resultado contador */
+    .result-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #adb5bd;
+        align-self: flex-end;
+        white-space: nowrap;
+    }
+
+    .result-badge {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .btn-limpiar {
+        padding: 10px 16px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-weight: 600;
+        font-size: 0.87rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        white-space: nowrap;
+        align-self: flex-end;
+    }
+
+    .btn-limpiar:hover { background: #f8f9fa; border-color: #adb5bd; }
+
+    /* ── Tabla ── */
     .table-card {
         background: white;
         border-radius: 15px;
@@ -111,11 +229,7 @@
 
     .table-responsive { overflow-x: auto; }
 
-    .productos-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 0;
-    }
+    .productos-table { width: 100%; border-collapse: collapse; margin: 0; }
 
     .productos-table thead {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -123,10 +237,10 @@
     }
 
     .productos-table thead th {
-        padding: 15px;
+        padding: 13px 15px;
         text-align: left;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         white-space: nowrap;
@@ -134,60 +248,47 @@
 
     .productos-table tbody tr {
         border-bottom: 1px solid #f0f0f0;
-        transition: background 0.2s;
+        transition: background 0.15s;
     }
 
     .productos-table tbody tr:hover { background: #f8f9fa; }
     .productos-table tbody tr:last-child { border-bottom: none; }
+    .productos-table tbody tr.hidden-row { display: none; }
 
     .productos-table tbody td {
-        padding: 14px 15px;
+        padding: 13px 15px;
         color: #495057;
         vertical-align: middle;
+        font-size: 0.88rem;
     }
 
-    /* Nombre con ícono */
-    .product-cell {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+    .product-cell { display: flex; align-items: center; gap: 12px; }
 
     .product-icon {
-        width: 38px;
-        height: 38px;
+        width: 38px; height: 38px;
         border-radius: 10px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 0.9rem;
-        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.9rem; flex-shrink: 0;
     }
 
-    .product-name {
-        font-weight: 600;
-        color: #2c3e50;
-    }
+    .product-name { font-weight: 600; color: #2c3e50; }
 
-    /* Stock badge con colores semánticos */
     .stock-badge {
         padding: 5px 13px;
         border-radius: 20px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         display: inline-flex;
         align-items: center;
         gap: 5px;
         white-space: nowrap;
     }
 
-    .stock-ok      { background: #e8f5e9; color: #2e7d32; }
-    .stock-low     { background: #fff3e0; color: #e65100; }
-    .stock-empty   { background: #fdecea; color: #c62828; }
+    .stock-ok    { background: #e8f5e9; color: #2e7d32; }
+    .stock-low   { background: #fff3e0; color: #e65100; }
+    .stock-empty { background: #fdecea; color: #c62828; }
 
-    /* Precio */
     .price-badge {
         background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
         color: #155724;
@@ -198,30 +299,35 @@
         white-space: nowrap;
     }
 
-    /* Acciones — solo ADMIN */
     .btn-edit {
-        padding: 7px 15px;
+        padding: 7px 14px;
         background: white;
         color: #667eea;
         border: 2px solid #667eea;
         border-radius: 8px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.2s;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         white-space: nowrap;
     }
 
-    .btn-edit:hover {
-        background: #667eea;
-        color: white;
+    .btn-edit:hover { background: #667eea; color: white; }
+
+    /* Sin resultados */
+    .no-results {
+        display: none;
+        text-align: center;
+        padding: 50px 20px;
+        color: #adb5bd;
     }
 
-    /* ── Estado vacío ───────────────────────────────── */
+    .no-results i { font-size: 3rem; display: block; margin-bottom: 12px; opacity: 0.35; }
+
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -230,33 +336,96 @@
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
 
-    .empty-state i {
-        font-size: 4rem;
-        color: #dee2e6;
-        display: block;
-        margin-bottom: 16px;
-    }
-
+    .empty-state i { font-size: 4rem; color: #dee2e6; display: block; margin-bottom: 16px; }
     .empty-state h3 { color: #6c757d; margin-bottom: 8px; }
     .empty-state p  { color: #adb5bd; margin-bottom: 24px; }
 
-    /* ── Responsive ─────────────────────────────────── */
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .page-header { padding: 20px; }
-        .page-header h2 { font-size: 1.4rem; }
-        .btn-add { width: 100%; justify-content: center; }
-
-        .stats-grid { grid-template-columns: 1fr 1fr; }
-
-        .productos-table thead th,
-        .productos-table tbody td { padding: 10px 12px; font-size: 0.85rem; }
-
-        .product-icon { display: none; }
+        .page-header    { padding: 18px 20px; }
+        .page-header h2 { font-size: 1.2rem; }
+        .btn-add        { width: 100%; justify-content: center; }
+        .stats-grid     { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .filtros-bar    { flex-wrap: wrap; gap: 10px; }
+        .filtro-search  { width: 100%; min-width: unset; flex: 0 0 100%; }
+        .product-icon   { display: none; }
+        .col-compra     { display: none; }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 540px) {
+        /* Filtros: columna limpia */
+        .filtros-bar        { flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; }
+        .filtro-search      { width: 100%; min-width: unset; }
+        .stock-chips-wrap   { width: 100%; }
+        .stock-chips        { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+        .chip               { justify-content: center; }
+        .result-info        { width: 100%; justify-content: flex-start; order: 10; }
+        .btn-limpiar        { width: 100%; justify-content: center; order: 11; }
+
+        .stats-grid         { grid-template-columns: 1fr 1fr; gap: 10px; }
+        .stat-value         { font-size: 1.2rem; }
+
+        /* Tabla: ocultar precio en móvil también */
+        .col-precio         { display: none; }
+
+        /* Tabla móvil → tarjetas */
+        .table-responsive { overflow: visible; }
+        .productos-table thead { display: none; }
+
+        .productos-table tbody tr {
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 1.5px solid #f0f0f0;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            padding: 14px 16px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            border-bottom: 1.5px solid #f0f0f0 !important;
+        }
+
+        .productos-table tbody tr.hidden-row { display: none; }
+
+        .productos-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border: none;
+            font-size: 0.86rem;
+        }
+
+        .productos-table tbody td::before {
+            content: attr(data-label);
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        /* Celda nombre: sin etiqueta, más prominente */
+        .td-nombre::before { display: none; }
+        .td-nombre {
+            border-bottom: 1px dashed #f0f0f0;
+            padding-bottom: 9px !important;
+            margin-bottom: 4px;
+        }
+
+        .product-cell { width: 100%; }
+        .product-icon { display: none; }
+
+        /* Acción al ancho completo */
+        .td-accion::before { display: none; }
+        .td-accion { justify-content: flex-end; padding-top: 8px; }
+        .btn-edit  { width: 100%; justify-content: center; }
+    }
+
+    @media (max-width: 380px) {
         .stats-grid { grid-template-columns: 1fr; }
-        .productos-table { font-size: 0.8rem; }
+        .chip       { font-size: 0.75rem; padding: 6px 10px; }
     }
 </style>
 {% endblock %}
@@ -266,114 +435,140 @@
 
     <!-- Header -->
     <div class="page-header">
-        <h2>
-            <i class="bi bi-box-seam"></i>
-            Productos
-        </h2>
+        <h2><i class="bi bi-box-seam"></i> Productos</h2>
         {% if rol == "ADMIN" %}
         <a href="{% url 'crear_producto' %}" class="btn-add">
-            <i class="bi bi-plus-circle"></i>
-            Agregar Producto
+            <i class="bi bi-plus-circle"></i> Agregar Producto
         </a>
         {% endif %}
     </div>
 
-    <!-- Stats rápidas -->
     {% if productos %}
+
+    <!-- Stats clickeables -->
     <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="bi bi-box-seam"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">Total Productos</span>
-                <span class="stat-value">{{ productos|length }}</span>
+        <div class="stat-card" id="cardTodos" onclick="filtrarPorStock('todos')" title="Ver todos">
+            <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <div class="stat-label">Total</div>
+                <div class="stat-value">{{ productos|length }}</div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon success">
-                <i class="bi bi-check-circle"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">En Stock</span>
-                <span class="stat-value" id="countEnStock">—</span>
+        <div class="stat-card" id="cardOk" onclick="filtrarPorStock('ok')" title="Filtrar en stock">
+            <div class="stat-icon success"><i class="bi bi-check-circle"></i></div>
+            <div>
+                <div class="stat-label">En Stock</div>
+                <div class="stat-value" id="countOk">—</div>
             </div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-icon warning">
-                <i class="bi bi-exclamation-triangle"></i>
+        <div class="stat-card" id="cardBajo" onclick="filtrarPorStock('bajo')" title="Filtrar stock bajo">
+            <div class="stat-icon warning"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="stat-label">Stock Bajo</div>
+                <div class="stat-value" id="countBajo">—</div>
             </div>
-            <div class="stat-content">
-                <span class="stat-label">Stock Bajo / Agotado</span>
-                <span class="stat-value" id="countBajo">—</span>
+        </div>
+        <div class="stat-card" id="cardAgotado" onclick="filtrarPorStock('agotado')" title="Filtrar agotados">
+            <div class="stat-icon danger"><i class="bi bi-x-circle"></i></div>
+            <div>
+                <div class="stat-label">Agotados</div>
+                <div class="stat-value" id="countAgotado">—</div>
             </div>
         </div>
     </div>
-    {% endif %}
+
+    <!-- Filtros -->
+    <div class="filtros-bar">
+        <!-- Búsqueda por nombre -->
+        <div class="filtro-search">
+            <label><i class="bi bi-search"></i> Buscar</label>
+            <div class="search-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" id="inputBusqueda" class="filtro-input"
+                       placeholder="Nombre del producto..." oninput="aplicarFiltros()">
+            </div>
+        </div>
+
+        <!-- Chips de stock -->
+        <div class="stock-chips-wrap">
+            <label><i class="bi bi-layers"></i> Stock</label>
+            <div class="stock-chips">
+                <span class="chip active" id="chip-todos"    onclick="filtrarPorStock('todos')">
+                    <i class="bi bi-grid"></i> Todos
+                </span>
+                <span class="chip" id="chip-ok"      onclick="filtrarPorStock('ok')">
+                    <i class="bi bi-check-circle-fill"></i> OK
+                </span>
+                <span class="chip" id="chip-bajo"    onclick="filtrarPorStock('bajo')">
+                    <i class="bi bi-exclamation-circle-fill"></i> Bajo
+                </span>
+                <span class="chip" id="chip-agotado" onclick="filtrarPorStock('agotado')">
+                    <i class="bi bi-x-circle-fill"></i> Agotado
+                </span>
+            </div>
+        </div>
+
+        <!-- Resultado y limpiar -->
+        <div class="result-info">
+            <span id="resultadoTexto" class="result-badge">{{ productos|length }}</span>
+            resultado{{ productos|length|pluralize }}
+        </div>
+
+        <button class="btn-limpiar" onclick="limpiarFiltros()">
+            <i class="bi bi-x-lg"></i> Limpiar
+        </button>
+    </div>
 
     <!-- Tabla -->
-    {% if productos %}
     <div class="table-card">
         <div class="table-responsive">
-            <table class="productos-table">
+            <table class="productos-table" id="tablaProductos">
                 <thead>
                     <tr>
                         <th><i class="bi bi-box"></i> Producto</th>
                         <th><i class="bi bi-layers"></i> Stock</th>
-                        <th><i class="bi bi-tag"></i> Precio Venta</th>
+                        <th class="col-precio"><i class="bi bi-tag"></i> Precio Venta</th>
                         {% if rol == "ADMIN" %}
-                        <th><i class="bi bi-gear"></i> Acción</th>
+                        <th class="col-accion"><i class="bi bi-gear"></i> Acción</th>
                         {% endif %}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tablaBody">
                     {% for producto in productos %}
-                    <tr>
-                        <!-- Nombre -->
-                        <td>
+                    <tr data-nombre="{{ producto.nombre|lower }}"
+                        data-stock-nivel="{% if producto.stock <= 0 %}agotado{% elif producto.stock <= 5 %}bajo{% else %}ok{% endif %}">
+
+                        <td class="td-nombre">
                             <div class="product-cell">
-                                <div class="product-icon">
-                                    <i class="bi bi-box"></i>
-                                </div>
+                                <div class="product-icon"><i class="bi bi-box"></i></div>
                                 <span class="product-name">{{ producto.nombre }}</span>
                             </div>
                         </td>
 
-                        <!-- Stock con semáforo -->
-                        <td>
+                        <td data-label="Stock">
                             {% if producto.stock <= 0 %}
                                 <span class="stock-badge stock-empty">
-                                    <i class="bi bi-x-circle-fill"></i>
-                                    Agotado
+                                    <i class="bi bi-x-circle-fill"></i> Agotado
                                 </span>
                             {% elif producto.stock <= 5 %}
                                 <span class="stock-badge stock-low">
-                                    <i class="bi bi-exclamation-circle-fill"></i>
-                                    {{ producto.stock }} — Bajo
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ producto.stock }} — Bajo
                                 </span>
                             {% else %}
                                 <span class="stock-badge stock-ok">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    {{ producto.stock }}
+                                    <i class="bi bi-check-circle-fill"></i> {{ producto.stock }}
                                 </span>
                             {% endif %}
                         </td>
 
-                        <!-- Precio venta -->
-                        <td>
-                            <span class="price-badge">
-                                ${{ producto.precio_venta|floatformat:2 }}
-                            </span>
+                        <td class="col-precio" data-label="Precio">
+                            <span class="price-badge">${{ producto.precio_venta|floatformat:2 }}</span>
                         </td>
 
-                        <!-- Acción ADMIN -->
                         {% if rol == "ADMIN" %}
-                        <td>
+                        <td class="td-accion col-accion">
                             <a href="{% url 'editar_producto' producto.id %}" class="btn-edit">
-                                <i class="bi bi-pencil"></i>
-                                Editar
+                                <i class="bi bi-pencil"></i> Editar
                             </a>
                         </td>
                         {% endif %}
@@ -381,19 +576,21 @@
                     {% endfor %}
                 </tbody>
             </table>
+            <div class="no-results" id="sinResultados">
+                <i class="bi bi-search"></i>
+                <p style="margin:0;">Sin productos que coincidan con tu búsqueda.</p>
+            </div>
         </div>
     </div>
 
     {% else %}
-    <!-- Estado vacío -->
     <div class="empty-state">
         <i class="bi bi-box"></i>
         <h3>Sin productos registrados</h3>
         {% if rol == "ADMIN" %}
         <p>Comienza agregando tu primer producto al inventario</p>
         <a href="{% url 'crear_producto' %}" class="btn-add" style="display:inline-flex;">
-            <i class="bi bi-plus-circle"></i>
-            Agregar Primer Producto
+            <i class="bi bi-plus-circle"></i> Agregar Primer Producto
         </a>
         {% else %}
         <p>No hay productos disponibles en este momento</p>
@@ -404,18 +601,72 @@
 </div>
 
 <script>
-    // Calcular stats de stock dinámicamente
-    const badges = document.querySelectorAll('.stock-badge');
-    let enStock = 0, bajo = 0;
+    const filas = Array.from(document.querySelectorAll('#tablaBody tr'));
+    let filtroStock = 'todos';
 
-    badges.forEach(b => {
-        if (b.classList.contains('stock-ok'))    enStock++;
-        if (b.classList.contains('stock-low') || b.classList.contains('stock-empty')) bajo++;
-    });
+    // ── Contar y mostrar stats ──
+    const counts = { ok: 0, bajo: 0, agotado: 0 };
+    filas.forEach(f => counts[f.dataset.stockNivel]++);
 
-    const elStock = document.getElementById('countEnStock');
-    const elBajo  = document.getElementById('countBajo');
-    if (elStock) elStock.textContent = enStock;
-    if (elBajo)  elBajo.textContent  = bajo;
+    document.getElementById('countOk').textContent      = counts.ok;
+    document.getElementById('countBajo').textContent    = counts.bajo;
+    document.getElementById('countAgotado').textContent = counts.agotado;
+
+    // ── Aplicar filtros (nombre + stock) ──
+    function aplicarFiltros() {
+        const q = document.getElementById('inputBusqueda').value.trim().toLowerCase();
+        let visibles = 0;
+
+        filas.forEach(fila => {
+            const nombre    = fila.dataset.nombre || '';
+            const nivel     = fila.dataset.stockNivel;
+            const matchNombre = nombre.includes(q);
+            const matchStock  = filtroStock === 'todos' || nivel === filtroStock;
+
+            if (matchNombre && matchStock) {
+                fila.classList.remove('hidden-row');
+                visibles++;
+            } else {
+                fila.classList.add('hidden-row');
+            }
+        });
+
+        // Actualizar contador resultado
+        document.getElementById('resultadoTexto').textContent = visibles;
+
+        // Mostrar / ocultar "sin resultados"
+        document.getElementById('sinResultados').style.display = visibles === 0 ? 'block' : 'none';
+    }
+
+    // ── Filtrar por chip de stock ──
+    function filtrarPorStock(nivel) {
+        filtroStock = nivel;
+
+        // Chips
+        const chipMap = { todos: 'todos', ok: 'ok', bajo: 'bajo', agotado: 'agotado' };
+        const activeClass = { todos: 'active', ok: 'active-green', bajo: 'active-orange', agotado: 'active-red' };
+
+        Object.keys(chipMap).forEach(k => {
+            const chip = document.getElementById('chip-' + k);
+            chip.className = 'chip' + (k === nivel ? ' ' + activeClass[k] : '');
+        });
+
+        // Stat cards
+        ['todos','ok','bajo','agotado'].forEach(k => {
+            const card = document.getElementById('card' + k.charAt(0).toUpperCase() + k.slice(1));
+            if (card) card.classList.toggle('active-filter', k === nivel);
+        });
+
+        aplicarFiltros();
+    }
+
+    // ── Limpiar todo ──
+    function limpiarFiltros() {
+        document.getElementById('inputBusqueda').value = '';
+        filtrarPorStock('todos');
+    }
+
+    // Inicializar contador
+    aplicarFiltros();
 </script>
 {% endblock %}

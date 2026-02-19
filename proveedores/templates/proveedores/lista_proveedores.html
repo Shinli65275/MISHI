@@ -264,31 +264,37 @@
             </div>
 
             <div class="proveedor-details">
-                {% if proveedor.telefono %}
                 <div class="detail-item">
                     <i class="bi bi-telephone"></i>
+                {% if proveedor.telefono %}
                     <span class="text">{{ proveedor.telefono }}</span>
                 </div>
+                {%else%}
+                    <span class="text text-muted">Sin teléfono</span>
+                </div>
                 {% endif %}
 
-                {% if proveedor.email %}
+                
                 <div class="detail-item">
                     <i class="bi bi-envelope"></i>
+                {% if proveedor.email %}
                     <span class="text">{{ proveedor.email }}</span>
                 </div>
+                {% else %}
+                    <span class="text text-muted">Sin email</span>
+                </div>
                 {% endif %}
 
-                {% if proveedor.direccion %}
                 <div class="detail-item">
                     <i class="bi bi-geo-alt"></i>
+                {% if proveedor.direccion %}
                     <span class="text">{{ proveedor.direccion }}</span>
+                </div>
+                {% else %}
+                    <span class="text text-muted">Sin dirección</span>
                 </div>
                 {% endif %}
 
-                <div class="detail-item">
-                    <i class="bi bi-calendar-check"></i>
-                    <span class="text">Registrado: {{ proveedor.creado|date:"d/m/Y" }}</span>
-                </div>
             </div>
 
             <div class="proveedor-actions">

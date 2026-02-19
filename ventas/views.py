@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from inventario.models import Producto
+from inventario.models import Lote, Producto
 from django.contrib.auth.decorators import login_required
 from negocios.utils import get_negocio_activo
 from ventas.models import DetalleVenta, Venta, Ingreso
@@ -68,42 +68,73 @@ def guardar_venta(request):
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
-    # 1) Intentar leer JSON (frontend usa application/json)
     try:
         if request.content_type and "application/json" in request.content_type:
-            payload = json.loads(request.body.decode("utf-8") or "{}")
+            payload   = json.loads(request.body.decode("utf-8") or "{}")
             productos = payload.get("data_venta")
             if productos is None:
                 return JsonResponse({"error": "Payload inválido"}, status=400)
 
-            venta = Venta.objects.create(negocio=negocio, total=0)
-            total = 0
-            total_productos = 0
+            venta            = Venta.objects.create(negocio=negocio, total=0)
+            total            = 0
+            total_productos  = 0
 
             for item in productos:
-                producto = Producto.objects.get(id=item["id"])
+                producto  = Producto.objects.select_for_update().get(id=item["id"], negocio=negocio)
+                cantidad  = int(item["cantidad"])
+                precio    = float(item["precio"])
 
-                if producto.stock < item["cantidad"]:
-                    return JsonResponse({"error": f"Stock insuficiente de {producto.nombre}"}, status=400)
+                # ── Verificar stock global antes de operar ──
+                if producto.stock < cantidad:
+                    raise ValueError(f"Stock insuficiente de '{producto.nombre}'. "
+                                     f"Disponible: {producto.stock}, solicitado: {cantidad}.")
 
-                subtotal = item["cantidad"] * item["precio"]
+                # ── Descontar lotes FIFO (más antiguo primero) ──
+                lotes = (
+                    Lote.objects
+                    .select_for_update()
+                    .filter(producto=producto, negocio=negocio, cantidad__gt=0)
+                    .order_by("fecha_creacion")   # ← FIFO
+                )
 
+                restante = cantidad
+                for lote in lotes:
+                    if restante <= 0:
+                        break
+
+                    if lote.cantidad <= restante:
+                        # Este lote se agota por completo
+                        restante       -= lote.cantidad
+                        lote.cantidad   = 0
+                    else:
+                        # Este lote cubre el resto
+                        lote.cantidad  -= restante
+                        restante        = 0
+
+                    lote.save(update_fields=["cantidad"])
+
+                if restante > 0:
+                    # Nunca debería llegar aquí si stock global está bien
+                    raise ValueError(f"No se pudo descontar el stock completo de '{producto.nombre}'.")
+
+                # ── Actualizar stock global del producto ──
+                producto.stock -= cantidad
+                producto.save(update_fields=["stock"])
+
+                subtotal = cantidad * precio
                 DetalleVenta.objects.create(
                     venta=venta,
                     producto=producto,
-                    cantidad=item["cantidad"],
-                    precio_unitario=item["precio"],
+                    cantidad=cantidad,
+                    precio_unitario=precio,
                     subtotal=subtotal
                 )
 
-                producto.stock -= item["cantidad"]
-                producto.save()
+                total           += subtotal
+                total_productos += cantidad
 
-                total += subtotal
-                total_productos += item["cantidad"]
-
-            venta.total = total
-            venta.total_productos = total_productos
+            venta.total            = total
+            venta.total_productos  = total_productos
             venta.save()
 
             Ingreso.objects.create(
@@ -114,51 +145,15 @@ def guardar_venta(request):
             )
 
             return JsonResponse({"success": True, "venta_id": venta.id})
+
     except Producto.DoesNotExist:
         return JsonResponse({"error": "Producto no encontrado"}, status=404)
+    except ValueError as e:
+        return JsonResponse({"error": str(e)}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-    # 2) Fallback: carrito en sesión (mantener compatibilidad con la otra implementación)
-    carrito = request.session.get("carrito", {})
-    if not carrito:
-        return JsonResponse({"error": "Carrito vacío"}, status=400)
-
-    venta = Venta.objects.create(negocio=negocio, total=0)
-    total_venta = 0
-
-    for producto_id, item in carrito.items():
-        producto = Producto.objects.get(id=producto_id)
-
-        cantidad = int(item["cantidad"])
-        precio = producto.precio_venta
-        subtotal = cantidad * precio
-
-        producto.stock -= cantidad
-        producto.save()
-
-        DetalleVenta.objects.create(
-            venta=venta,
-            producto=producto,
-            cantidad=cantidad,
-            precio_unitario=precio,
-            subtotal=subtotal
-        )
-
-        total_venta += subtotal
-
-    venta.total = total_venta
-    venta.save()
-
-    Ingreso.objects.create(
-        negocio=negocio,
-        concepto=f"Venta #{venta.id}",
-        monto=total_venta,
-        referencia=f"VENTA-{venta.id}"
-    )
-
-    request.session["carrito"] = {}
-    return redirect("detalle_venta", venta_id=venta.id)
+    return JsonResponse({"error": "Solicitud inválida"}, status=400)
 
 
 @login_required

@@ -1,6 +1,8 @@
 from django.db import models
 from negocios.models import Negocio
 from proveedores.models import Proveedor
+from django.db import transaction
+
 
 class Producto(models.Model): #negocio, nombre, proveedor, precio_venta, stock, codigo, stock_minimo, stock_maximo
     negocio = models.ForeignKey(

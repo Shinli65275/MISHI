@@ -9,382 +9,485 @@
         border-radius: 15px;
         padding: 40px;
         color: white;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        text-align: center;
     }
 
     .profile-avatar-large {
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
         background: white;
         color: #667eea;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
-        font-weight: bold;
-        border: 5px solid rgba(255,255,255,0.3);
-        margin: 0 auto 20px;
+        font-size: 2.8rem;
+        font-weight: 700;
+        border: 4px solid rgba(255,255,255,0.3);
+        margin: 0 auto 16px;
     }
 
+    .profile-header h2 { margin: 0 0 4px; font-size: 1.5rem; }
+    .profile-header p  { margin: 0 0 14px; opacity: 0.75; font-size: 0.9rem; }
+
+    .badge-role {
+        padding: 7px 18px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge-admin    { background: rgba(255,255,255,0.25); color: white; }
+    .badge-vendedor { background: rgba(255,255,255,0.25); color: white; }
+    .badge-almacen  { background: rgba(255,255,255,0.25); color: white; }
+
+    /* ── Alertas de mensajes ── */
+    .alert-mishi {
+        padding: 12px 18px;
+        border-radius: 10px;
+        margin-bottom: 18px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-mishi.success { background: #e8fff3; color: #2e7d32; border: 1.5px solid #c3e6cb; }
+    .alert-mishi.error   { background: #fff0f2; color: #c62828; border: 1.5px solid #f5c6cb; }
+
+    /* ── Cards ── */
     .info-card {
         background: white;
         border-radius: 15px;
-        padding: 25px;
+        padding: 22px;
         margin-bottom: 20px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .info-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
 
     .info-card h5 {
         color: #2c3e50;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #e9ecef;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f0f0f0;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+        font-size: 0.92rem;
+        font-weight: 600;
     }
 
     .info-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 0;
+        padding: 11px 0;
         border-bottom: 1px solid #f8f9fa;
+        gap: 12px;
     }
 
-    .info-row:last-child {
-        border-bottom: none;
-    }
+    .info-row:last-child { border-bottom: none; }
 
     .info-label {
         color: #6c757d;
-        font-weight: 500;
+        font-size: 0.86rem;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 7px;
+        flex-shrink: 0;
     }
 
     .info-value {
         color: #2c3e50;
         font-weight: 600;
+        font-size: 0.88rem;
         text-align: right;
     }
 
-    .badge-role {
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        display: inline-block;
+    /* ── Botones de acción ── */
+    .action-btns {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
 
-    .badge-admin {
+    .btn-perfil {
+        width: 100%;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-perfil.primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
     }
 
-    .badge-vendedor {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
+    .btn-perfil.primary:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(102,126,234,0.35); color: white; }
+
+    .btn-perfil.outline {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
     }
 
-    .badge-almacen {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
+    .btn-perfil.outline:hover { background: #f0f2ff; }
+
+    /* ── Modal custom ── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+        background: white;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 440px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.25);
+        animation: slideUp 0.25s ease;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-head {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 22px;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-head h6 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+    .btn-close-modal {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s;
+        font-size: 1rem;
+    }
+
+    .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
+
+    .modal-body-inner { padding: 22px; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 700;
         color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
     }
 
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        opacity: 0.5;
+    .form-control-mishi {
+        width: 100%;
+        padding: 11px 14px;
+        border: 2px solid #e9ecef;
+        border-radius: 9px;
+        font-size: 0.88rem;
+        color: #2c3e50;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: white;
     }
 
+    .form-control-mishi:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+    .form-hint { font-size: 0.72rem; color: #adb5bd; margin-top: 4px; }
+
+    .modal-footer-inner {
+        padding: 14px 22px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-modal-cancel {
+        padding: 10px 18px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.88rem;
+    }
+
+    .btn-modal-cancel:hover { background: #f8f9fa; }
+
+    .btn-modal-save {
+        padding: 10px 22px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s;
+    }
+
+    .btn-modal-save:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
+
+    /* ── Estado vacío negocio ── */
+    .empty-negocio { text-align: center; padding: 30px 20px; color: #adb5bd; }
+    .empty-negocio i { font-size: 2.5rem; display: block; margin-bottom: 10px; opacity: 0.35; }
+
+    /* ── Responsive ── */
     @media (max-width: 768px) {
-        .profile-header {
-            padding: 30px 20px;
-        }
+        .profile-header { padding: 28px 20px; }
+        .profile-header h2 { font-size: 1.3rem; }
+        .profile-avatar-large { width: 90px; height: 90px; font-size: 2.2rem; }
+        .info-card  { padding: 18px; }
+    }
 
-        .profile-avatar-large {
-            width: 100px;
-            height: 100px;
-            font-size: 2.5rem;
-        }
-
-        .info-card {
-            padding: 20px;
-        }
-
+    @media (max-width: 540px) {
         .info-row {
             flex-direction: column;
-            gap: 5px;
             align-items: flex-start;
+            gap: 4px;
         }
 
-        .info-value {
-            text-align: left;
-        }
+        .info-value { text-align: left; }
+        .modal-box  { max-width: 100%; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Header del Perfil -->
+
+    <!-- Mensajes flash -->
+    {% for msg in messages %}
+    <div class="alert-mishi {{ msg.tags }}">
+        <i class="bi bi-{% if msg.tags == 'success' %}check-circle-fill{% else %}exclamation-circle-fill{% endif %}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+
+    <!-- Header -->
     <div class="profile-header">
-        <div class="text-center">
-            <div class="profile-avatar-large">
-                {{ user.username|slice:":1"|upper }}
-            </div>
-            <h2 class="mb-2">{{ user.get_full_name|default:user.username }}</h2>
-            <p class="mb-3 opacity-75">@{{ user.username }}</p>
-            {% if rol == 'ADMIN' %}
-                <span class="badge-role badge-admin">
-                    <i class="bi bi-shield-check"></i> Administrador
-                </span>
-            {% elif rol == 'VENDEDOR' %}
-                <span class="badge-role badge-vendedor">
-                    <i class="bi bi-person-badge"></i> Vendedor
-                </span>
-            {% elif rol == 'ALMACEN' %}
-                <span class="badge-role badge-almacen">
-                    <i class="bi bi-boxes"></i> Almacén
-                </span>
-            {% endif %}
-        </div>
+        <div class="profile-avatar-large">{{ user.username|slice:":1"|upper }}</div>
+        <h2>{{ user.get_full_name|default:user.username }}</h2>
+        <p>@{{ user.username }}</p>
+        {% if rol == 'ADMIN' %}
+            <span class="badge-role badge-admin"><i class="bi bi-shield-check"></i> Administrador</span>
+        {% elif rol == 'VENDEDOR' %}
+            <span class="badge-role badge-vendedor"><i class="bi bi-person-badge"></i> Vendedor</span>
+        {% elif rol == 'ALMACEN' %}
+            <span class="badge-role badge-almacen"><i class="bi bi-boxes"></i> Almacén</span>
+        {% endif %}
     </div>
 
     <div class="row">
-        <!-- Columna Izquierda -->
+
+        <!-- Columna izquierda -->
         <div class="col-lg-6">
-            <!-- Información Personal -->
+
             <div class="info-card">
-                <h5>
-                    <i class="bi bi-person-circle"></i>
-                    Información Personal
-                </h5>
+                <h5><i class="bi bi-person-circle" style="color:#667eea;"></i> Información Personal</h5>
                 <div class="info-row">
-                    <span class="info-label">
-                        <i class="bi bi-person"></i>
-                        Nombre de usuario
-                    </span>
+                    <span class="info-label"><i class="bi bi-person"></i> Usuario</span>
                     <span class="info-value">{{ user.username }}</span>
                 </div>
                 {% if user.first_name or user.last_name %}
                 <div class="info-row">
-                    <span class="info-label">
-                        <i class="bi bi-person-vcard"></i>
-                        Nombre completo
-                    </span>
+                    <span class="info-label"><i class="bi bi-person-vcard"></i> Nombre completo</span>
                     <span class="info-value">{{ user.first_name }} {{ user.last_name }}</span>
                 </div>
                 {% endif %}
                 <div class="info-row">
-                    <span class="info-label">
-                        <i class="bi bi-envelope"></i>
-                        Fecha de registro
-                    </span>
+                    <span class="info-label"><i class="bi bi-calendar-plus"></i> Registro</span>
                     <span class="info-value">{{ user.date_joined|date:"d/m/Y" }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">
-                        <i class="bi bi-clock-history"></i>
-                        Último acceso
-                    </span>
+                    <span class="info-label"><i class="bi bi-clock-history"></i> Último acceso</span>
                     <span class="info-value">{{ user.last_login|date:"d/m/Y H:i" }}</span>
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
+            <!-- Acciones -->
             <div class="info-card">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                        <i class="bi bi-pencil"></i> Editar Perfil
-                    </button>
-                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                        <i class="bi bi-key"></i> Cambiar Contraseña
+                <h5><i class="bi bi-gear-fill" style="color:#667eea;"></i> Acciones</h5>
+                <div class="action-btns">
+ 
+                    <button class="btn-perfil outline" onclick="abrirModal('modalPassword')">
+                        <i class="bi bi-key-fill"></i> Cambiar Contraseña
                     </button>
                 </div>
             </div>
+
         </div>
 
-        <!-- Columna Derecha -->
+        <!-- Columna derecha -->
         <div class="col-lg-6">
-            <!-- Información del Negocio -->
+
             <div class="info-card">
-                <h5>
-                    <i class="bi bi-shop"></i>
-                    Negocio Activo
-                </h5>
+                <h5><i class="bi bi-shop" style="color:#667eea;"></i> Negocio Activo</h5>
                 {% if negocio %}
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-building"></i>
-                            Nombre del negocio
-                        </span>
-                        <span class="info-value">{{ negocio.nombre }}</span>
-                    </div>
-                    {% if negocio.direccion %}
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-geo-alt"></i>
-                            Dirección
-                        </span>
-                        <span class="info-value">{{ negocio.direccion }}</span>
-                    </div>
-                    {% endif %}
-                    {% if negocio.telefono %}
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-telephone"></i>
-                            Teléfono
-                        </span>
-                        <span class="info-value">{{ negocio.telefono }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-calendar-plus"></i>
-                            Fecha de creación
-                        </span>
-                        <span class="info-value">{{ negocio.creado|date:"d/m/Y" }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-shield-check"></i>
-                            Tu rol
-                        </span>
-                        <span class="info-value">
-                            {% if rol == 'ADMIN' %}
-                                <span class="badge bg-primary">
-                                    <i class="bi bi-shield-check"></i> Administrador
-                                </span>
-                            {% elif rol == 'VENDEDOR' %}
-                                <span class="badge bg-info">
-                                    <i class="bi bi-person-badge"></i> Vendedor
-                                </span>
-                            {% elif rol == 'ALMACEN' %}
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-boxes"></i> Almacén
-                                </span>
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">
-                            <i class="bi bi-circle-fill"></i>
-                            Estado
-                        </span>
-                        <span class="info-value">
-                            {% if negocio.activo %}
-                                <span class="badge bg-success">Activo</span>
-                            {% else %}
-                                <span class="badge bg-danger">Inactivo</span>
-                            {% endif %}
-                        </span>
-                    </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-building"></i> Nombre</span>
+                    <span class="info-value">{{ negocio.nombre }}</span>
+                </div>
+                {% if negocio.direccion %}
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-geo-alt"></i> Dirección</span>
+                    <span class="info-value">{{ negocio.direccion }}</span>
+                </div>
+                {% endif %}
+                {% if negocio.telefono %}
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-telephone"></i> Teléfono</span>
+                    <span class="info-value">{{ negocio.telefono }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-calendar-plus"></i> Creado</span>
+                    <span class="info-value">{{ negocio.creado|date:"d/m/Y" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-shield-check"></i> Tu rol</span>
+                    <span class="info-value">
+                        {% if rol == 'ADMIN' %}
+                            <span style="background:#f0f2ff; color:#667eea; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">
+                                <i class="bi bi-shield-check"></i> Administrador
+                            </span>
+                        {% elif rol == 'VENDEDOR' %}
+                            <span style="background:#e8f6ff; color:#4facfe; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">
+                                <i class="bi bi-person-badge"></i> Vendedor
+                            </span>
+                        {% elif rol == 'ALMACEN' %}
+                            <span style="background:#f8f9fa; color:#6c757d; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">
+                                <i class="bi bi-boxes"></i> Almacén
+                            </span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="bi bi-circle-fill"></i> Estado</span>
+                    <span class="info-value">
+                        {% if negocio.activo %}
+                            <span style="background:#e8fff3; color:#2e7d32; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">Activo</span>
+                        {% else %}
+                            <span style="background:#fff0f2; color:#c62828; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700;">Inactivo</span>
+                        {% endif %}
+                    </span>
+                </div>
                 {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-shop"></i>
-                        <p class="mb-0">No hay negocio activo seleccionado</p>
-                    </div>
+                <div class="empty-negocio">
+                    <i class="bi bi-shop"></i>
+                    <p style="margin:0; font-size:0.9rem;">Sin negocio activo</p>
+                </div>
                 {% endif %}
             </div>
 
-        
-
-<!-- Modal Editar Perfil -->
-<div class="modal fade" id="editProfileModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-pencil"></i> Editar Perfil
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" action="#">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="bi bi-person"></i> Nombre
-                        </label>
-                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" placeholder="Ingresa tu nombre">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="bi bi-person"></i> Apellido
-                        </label>
-                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" placeholder="Ingresa tu apellido">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <i class="bi bi-envelope"></i> Correo electrónico
-                        </label>
-                        <input type="email" name="email" class="form-control" value="{{ user.email }}" placeholder="correo@ejemplo.com">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Guardar cambios
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
 
-<!-- Modal Cambiar Contraseña -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-key"></i> Cambiar Contraseña
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" action="#">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Contraseña actual</label>
-                        <input type="password" name="old_password" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nueva contraseña</label>
-                        <input type="password" name="new_password1" class="form-control" required>
-                        <small class="text-muted">Mínimo 8 caracteres</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Confirmar nueva contraseña</label>
-                        <input type="password" name="new_password2" class="form-control" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Cambiar contraseña
-                    </button>
-                </div>
-            </form>
+<!-- ── Modal Cambiar Contraseña ── -->
+<div class="modal-overlay" id="modalPassword" onclick="cerrarSiOverlay(event, 'modalPassword')">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h6><i class="bi bi-key-fill"></i> Cambiar Contraseña</h6>
+            <button class="btn-close-modal" onclick="cerrarModal('modalPassword')"><i class="bi bi-x-lg"></i></button>
         </div>
+        <form method="POST" action="{% url 'cambiar_password' %}">
+            {% csrf_token %}
+            <div class="modal-body-inner">
+                <div class="form-group">
+                    <label>Contraseña actual</label>
+                    <input type="password" name="old_password" class="form-control-mishi"
+                           required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Nueva contraseña</label>
+                    <input type="password" name="new_password1" class="form-control-mishi"
+                           required placeholder="••••••••">
+                    <div class="form-hint"><i class="bi bi-info-circle"></i> Mínimo 8 caracteres</div>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Confirmar nueva contraseña</label>
+                    <input type="password" name="new_password2" class="form-control-mishi"
+                           required placeholder="••••••••">
+                </div>
+            </div>
+            <div class="modal-footer-inner">
+                <button type="button" class="btn-modal-cancel" onclick="cerrarModal('modalPassword')">Cancelar</button>
+                <button type="submit" class="btn-modal-save">
+                    <i class="bi bi-check-circle-fill"></i> Cambiar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
+<script>
+function abrirModal(id) {
+    document.getElementById(id).classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal(id) {
+    document.getElementById(id).classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function cerrarSiOverlay(e, id) {
+    if (e.target === document.getElementById(id)) cerrarModal(id);
+}
+
+// Abrir modal automáticamente si hay error (para no perder el contexto)
+{% if messages %}
+{% for msg in messages %}
+{% if msg.tags == 'error' %}
+// Re-abrir el modal de password si hubo error
+window.addEventListener('DOMContentLoaded', () => abrirModal('modalPassword'));
+{% endif %}
+{% endfor %}
+{% endif %}
+</script>
 {% endblock %}
