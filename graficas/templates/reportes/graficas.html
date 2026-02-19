@@ -233,53 +233,6 @@
         gap: 8px;
     }
 
-    /* Tabla de top conceptos */
-    .top-table { width: 100%; border-collapse: collapse; }
-
-    .top-table thead th {
-        padding: 9px 12px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #adb5bd;
-        text-align: left;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .top-table thead th:last-child { text-align: right; }
-
-    .top-table tbody tr { border-bottom: 1px solid #f8f9fa; transition: background 0.15s; }
-    .top-table tbody tr:hover { background: #f8f9fa; }
-    .top-table tbody tr:last-child { border-bottom: none; }
-
-    .top-table tbody td {
-        padding: 11px 12px;
-        font-size: 0.86rem;
-        color: #495057;
-        vertical-align: middle;
-    }
-
-    .top-table tbody td:last-child { text-align: right; font-weight: 700; color: #2e7d32; }
-
-    .rank-badge {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-size: 0.7rem;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 8px;
-    }
-
-    .rank-badge.gold   { background: linear-gradient(135deg, #f7971e, #ffd200); }
-    .rank-badge.silver { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
-    .rank-badge.bronze { background: linear-gradient(135deg, #cd7f32, #b8860b); }
-
     /* Balance visual */
     .balance-visual {
         display: flex;
@@ -571,78 +524,7 @@
 
     <!-- ── Reporte del mes ── -->
 
-    <!-- Fila 1: Top ingresos + Top egresos -->
-    <div class="reporte-grid reporte-grid-2col" style="grid-template-columns: 1fr 1fr; margin-bottom:22px;">
-
-        <!-- Top conceptos de ingreso -->
-        <div class="reporte-card">
-            <div class="reporte-titulo">
-                <i class="bi bi-trophy-fill" style="color:#f7971e;"></i>
-                Top ingresos — {{ nombre_mes }} {{ anio_actual }}
-            </div>
-            {% if top_conceptos %}
-            <table class="top-table">
-                <thead>
-                    <tr><th>#</th><th>Concepto</th><th>Total</th></tr>
-                </thead>
-                <tbody>
-                    {% for item in top_conceptos %}
-                    <tr>
-                        <td>
-                            <span class="rank-badge {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">
-                                {{ forloop.counter }}
-                            </span>
-                        </td>
-                        <td>{{ item.concepto }}</td>
-                        <td>${{ item.total|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-chart">
-                <i class="bi bi-inbox"></i>
-                Sin ingresos en este periodo
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Top categorías de egreso -->
-        <div class="reporte-card">
-            <div class="reporte-titulo">
-                <i class="bi bi-graph-down-arrow" style="color:#f5576c;"></i>
-                Top egresos — {{ nombre_mes }} {{ anio_actual }}
-            </div>
-            {% if top_categorias %}
-            <table class="top-table">
-                <thead>
-                    <tr><th>#</th><th>Categoría</th><th>Total</th></tr>
-                </thead>
-                <tbody>
-                    {% for item in top_categorias %}
-                    <tr>
-                        <td>
-                            <span class="rank-badge" style="background:linear-gradient(135deg,{% if forloop.counter == 1 %}#f5576c,#f093fb{% elif forloop.counter == 2 %}#f093fb,#f5576c{% elif forloop.counter == 3 %}#fa709a,#fee140{% else %}#adb5bd,#6c757d{% endif %});">
-                                {{ forloop.counter }}
-                            </span>
-                        </td>
-                        <td>{{ item.categoria }}</td>
-                        <td style="color:#c62828;">${{ item.total|floatformat:2 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <div class="empty-chart">
-                <i class="bi bi-inbox"></i>
-                Sin egresos en este periodo
-            </div>
-            {% endif %}
-        </div>
-
-    </div>
-
-    <!-- Fila 2: Balance visual -->
+    <!-- Balance visual -->
     <div class="reporte-grid" style="grid-template-columns: 1fr 340px;">
 
         <!-- Mini reporte textual -->
