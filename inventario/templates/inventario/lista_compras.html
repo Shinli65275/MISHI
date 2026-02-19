@@ -640,4 +640,120 @@
         window.location = url.toString();
     }
 </script>
+
+{% if nueva_compra %}
+<!-- ── Ticket Modal (auto-abre) ─── -->
+<div class="ticket-overlay open" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
+    <div class="ticket-modal">
+
+        <div class="ticket-modal-header">
+            <h6><i class="bi bi-receipt"></i> Vista previa del Ticket</h6>
+            <button class="btn-close-modal" onclick="cerrarTicket()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div id="ticketPrintArea">
+            <div id="ticketPreview">
+                <div class="ticket-store-name">MISHI</div>
+                <div class="ticket-store-sub">Sistema de Gestión de Compras</div>
+                <hr class="ticket-divider solid">
+                <div class="ticket-info-row">
+                    <span>Factura N°</span>
+                    <span>#{{ nueva_compra.numero_factura }}</span>
+                </div>
+                <div class="ticket-info-row">
+                    <span>Proveedor</span>
+                    <span>{{ nueva_compra.proveedor.nombre }}</span>
+                </div>
+                <div class="ticket-info-row">
+                    <span>Fecha</span>
+                    <span>{{ nueva_compra.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+                <hr class="ticket-divider">
+                <div class="ticket-items-header">
+                    <span>Producto</span>
+                    <span style="text-align:center;">Cant</span>
+                    <span style="text-align:right;">P.Unit</span>
+                    <span style="text-align:right;">Subtotal</span>
+                </div>
+                {% for d in nueva_compra.detalles.all %}
+                <div class="ticket-item-row">
+                    <span class="item-name">{{ d.producto.nombre }}</span>
+                    <span style="text-align:center;">{{ d.cantidad }}</span>
+                    <span style="text-align:right;">${{ d.precio_compra|floatformat:2 }}</span>
+                    <span style="text-align:right; font-weight:700;">${{ d.subtotal|floatformat:2 }}</span>
+                </div>
+                {% endfor %}
+                <hr class="ticket-divider solid">
+                <div class="ticket-total-row">
+                    <span>TOTAL</span>
+                    <span>${{ nueva_compra.total|floatformat:2 }}</span>
+                </div>
+                <div class="ticket-items-summary">
+                    <span>Artículos:</span>
+                    <span>{{ nueva_compra.total_productos }}</span>
+                </div>
+                <hr class="ticket-divider">
+                <div class="ticket-footer-text">
+                    Documento generado por MISHI<br>
+                    {{ nueva_compra.fecha|date:"d/m/Y" }}<br>
+                    — Gracias por su compra —
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-modal-footer">
+            <button class="btn-cancel-modal" onclick="cerrarTicket()">
+                <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+            <button class="btn-print" onclick="imprimirTicket()">
+                <i class="bi bi-printer-fill"></i> Imprimir Ticket
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function cerrarTicket() {
+        document.getElementById('ticketOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+    function cerrarSiOverlay(e) {
+        if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+    }
+    function imprimirTicket() {
+        window.print();
+    }
+
+    // Bloquear scroll mientras el modal está abierto
+    document.body.style.overflow = 'hidden';
+</script>
+
+<!-- Estilos mínimos del ticket (si no están ya en base.html) -->
+<style>
+    .ticket-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1050; align-items:center; justify-content:center; }
+    .ticket-overlay.open { display:flex; }
+    .ticket-modal { background:white; border-radius:16px; width:400px; max-width:95vw; max-height:92vh; overflow-y:auto; box-shadow:0 24px 70px rgba(0,0,0,0.28); }
+    .ticket-modal-header { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; padding:18px 22px; border-radius:16px 16px 0 0; display:flex; justify-content:space-between; align-items:center; }
+    .ticket-modal-header h6 { margin:0; font-size:1rem; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .btn-close-modal { background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+    #ticketPreview { padding:28px 30px; font-family:'Courier New',monospace; background:#fafafa; }
+    .ticket-store-name { text-align:center; font-size:1.5rem; font-weight:700; letter-spacing:4px; color:#2c3e50; margin-bottom:2px; }
+    .ticket-store-sub { text-align:center; font-size:0.72rem; color:#6c757d; margin-bottom:16px; }
+    .ticket-divider { border:none; border-top:1px dashed #adb5bd; margin:12px 0; }
+    .ticket-divider.solid { border-top:2px solid #2c3e50; }
+    .ticket-info-row { display:flex; justify-content:space-between; font-size:0.78rem; color:#495057; margin-bottom:5px; }
+    .ticket-items-header { display:grid; grid-template-columns:1fr 38px 68px 68px; gap:4px; font-size:0.68rem; font-weight:700; color:#2c3e50; text-transform:uppercase; padding:6px 0; border-bottom:1px solid #dee2e6; }
+    .ticket-item-row { display:grid; grid-template-columns:1fr 38px 68px 68px; gap:4px; font-size:0.78rem; color:#495057; padding:6px 0; border-bottom:1px dotted #e9ecef; }
+    .ticket-total-row { display:flex; justify-content:space-between; font-size:1.05rem; font-weight:700; color:#2c3e50; padding:6px 0 2px; }
+    .ticket-items-summary { display:flex; justify-content:space-between; font-size:0.75rem; color:#6c757d; margin-top:2px; }
+    .ticket-footer-text { text-align:center; font-size:0.7rem; color:#adb5bd; margin-top:4px; line-height:1.7; }
+    .ticket-modal-footer { padding:16px 22px; border-top:1px solid #f0f0f0; display:flex; gap:10px; justify-content:flex-end; background:white; border-radius:0 0 16px 16px; }
+    .btn-print { padding:10px 22px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; }
+    .btn-cancel-modal { padding:10px 18px; background:white; color:#6c757d; border:2px solid #e9ecef; border-radius:8px; font-weight:600; cursor:pointer; }
+    @media print { body *{visibility:hidden!important;} #ticketPrintArea,#ticketPrintArea *{visibility:visible!important;} #ticketPrintArea{position:fixed!important;top:0!important;left:0!important;width:100%!important;display:flex!important;justify-content:center!important;padding:10px!important;background:white!important;} #ticketPreview{width:280px!important;padding:16px!important;background:white!important;} }
+</style>
+{% endif %}
 {% endblock %}

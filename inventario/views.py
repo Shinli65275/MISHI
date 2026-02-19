@@ -18,9 +18,12 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
 from django.utils import timezone
-
+from django.contrib import messages
 from negocios.utils import get_negocio_activo
 from inventario.models import Producto, Lote   
+from django.db.models import Q, F, Sum, Count
+
+
 @login_required
 def nueva_compra(request):
     negocio = get_negocio_activo(request)
@@ -39,7 +42,8 @@ def productos_por_proveedor(request, proveedor_id):
             {
                 "id": p.id,
                 "nombre": p.nombre,
-                "precio_venta": float(p.precio_venta)  # ← agrega esto
+                "codigo": p.codigo or "",         
+                "precio_compra": float(p.precio_compra)
             }
             for p in productos
         ]
@@ -121,6 +125,9 @@ def guardar_compra(request):
         categoria="Compra de Inventario"
     )
 
+    request.session['nueva_compra_id'] = compra.id
+
+    messages.success(request, "Compra registrada exitosamente")
     return redirect("lista_compras")
 
 @login_required
@@ -272,20 +279,16 @@ def lista_egresos(request):
         "categoria_filtro": categoria_filtro,
     })
 
-@login_required
 def lista_compras(request):
     negocio_id = request.session.get('negocio_id')
     
     if not negocio_id:
-        messages.error(request, "No hay un negocio activo seleccionado")
         return redirect('seleccionar_negocio')
     
-    # Obtener todas las compras del negocio
     compras = Compra.objects.filter(
         negocio_id=negocio_id
     ).select_related('proveedor')
     
-    # Aplicar filtros
     factura = request.GET.get('factura', '').strip()
     proveedor_id = request.GET.get('proveedor', '').strip()
     fecha_desde = request.GET.get('fecha_desde', '').strip()
@@ -293,29 +296,34 @@ def lista_compras(request):
     
     if factura:
         compras = compras.filter(numero_factura__icontains=factura)
-    
     if proveedor_id:
         compras = compras.filter(proveedor_id=proveedor_id)
-    
     if fecha_desde:
         try:
-            fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
-            compras = compras.filter(fecha__gte=fecha_desde_dt)
+            compras = compras.filter(fecha__gte=datetime.strptime(fecha_desde, '%Y-%m-%d'))
         except ValueError:
             pass
     
-    # Ordenar por fecha más reciente
     compras = compras.order_by('-fecha')
     
-    # Obtener lista de proveedores para el filtro
     negocio = get_negocio_activo(request)
     proveedores = Proveedor.objects.filter(negocio=negocio)
 
-    
+    # ✅ Sin import local — Compra ya está importada al inicio del archivo
+    nueva_compra_id = request.session.pop('nueva_compra_id', None)
+    nueva_compra = None
+    if nueva_compra_id:
+        try:
+            nueva_compra = Compra.objects.prefetch_related('detalles__producto').get(id=nueva_compra_id)
+        except Compra.DoesNotExist:
+            pass
+
     return render(request, 'inventario/lista_compras.html', {
         'compras': compras,
         'proveedores': proveedores,
+        'nueva_compra': nueva_compra,
     })
+
 @login_required
 def lista_egresos_fijos(request):
 
@@ -384,26 +392,29 @@ def toggle_egreso_fijo(request, egreso_id):
 def inventario(request):
     negocio = get_negocio_activo(request)
 
-    # ── Filtros ──
-    q          = request.GET.get("q", "").strip()
-    orden      = request.GET.get("orden", "nombre")   # nombre | stock_asc | stock_desc | precio
-    stock_fil  = request.GET.get("stock", "todos")    # todos | bajo | agotado | ok
+    q         = request.GET.get("q", "").strip()
+    orden     = request.GET.get("orden", "nombre")
+    stock_fil = request.GET.get("stock", "todos")
 
     productos = Producto.objects.filter(negocio=negocio)
 
-    # Búsqueda por nombre
     if q:
         productos = productos.filter(nombre__icontains=q)
 
     # Filtro por nivel de stock
-    if stock_fil == "bajo":
-        productos = productos.filter(stock__gt=0, stock__lte=10)
-    elif stock_fil == "agotado":
+    if stock_fil == "agotado":
         productos = productos.filter(stock=0)
+    elif stock_fil == "bajo":
+        productos = productos.filter(stock__gt=0).filter(
+            Q(stock_minimo__gt=0, stock__lte=F('stock_minimo')) |
+            Q(stock_minimo=-1, stock__lte=10)
+        )
     elif stock_fil == "ok":
-        productos = productos.filter(stock__gt=10)
+        productos = productos.filter(stock__gt=0).filter(
+            Q(stock_minimo__gt=0, stock__gt=F('stock_minimo')) |
+            Q(stock_minimo=-1, stock__gt=10)
+        )
 
-    # Ordenamiento
     orden_map = {
         "nombre":     "nombre",
         "stock_asc":  "stock",
@@ -412,19 +423,21 @@ def inventario(request):
     }
     productos = productos.order_by(orden_map.get(orden, "nombre"))
 
-    # Anotar lotes por producto
     productos = productos.annotate(
         num_lotes=Count("lotes"),
-        valor_inventario=Sum("lotes__precio_compra")  # suma precios de compra de lotes
+        valor_inventario=Sum("lotes__precio_compra")
     )
 
     # ── KPIs ──
-    total_productos   = Producto.objects.filter(negocio=negocio).count()
-    total_stock       = Producto.objects.filter(negocio=negocio).aggregate(t=Sum("stock"))["t"] or 0
-    bajo_stock        = Producto.objects.filter(negocio=negocio, stock__gt=0, stock__lte=10).count()
-    agotados          = Producto.objects.filter(negocio=negocio, stock=0).count()
+    todos           = Producto.objects.filter(negocio=negocio)
+    total_productos = todos.count()
+    total_stock     = todos.aggregate(t=Sum("stock"))["t"] or 0
+    agotados        = todos.filter(stock=0).count()
+    bajo_stock      = todos.filter(stock__gt=0).filter(
+        Q(stock_minimo__gt=0, stock__lte=F('stock_minimo')) |
+        Q(stock_minimo=-1, stock__lte=10)
+    ).count()
 
-    # ── Lotes recientes (últimos 8) ──
     lotes_recientes = (
         Lote.objects
         .filter(negocio=negocio)
@@ -435,13 +448,9 @@ def inventario(request):
     context = {
         "productos":       productos,
         "lotes_recientes": lotes_recientes,
-
-        # Filtros activos
-        "q":           q,
-        "orden":       orden,
-        "stock_fil":   stock_fil,
-
-        # KPIs
+        "q":               q,
+        "orden":           orden,
+        "stock_fil":       stock_fil,
         "total_productos": total_productos,
         "total_stock":     total_stock,
         "bajo_stock":      bajo_stock,

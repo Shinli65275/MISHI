@@ -311,6 +311,44 @@
         flex-shrink: 0;
     }
 
+    /* ── Margen indicador ───────────────────────────── */
+    .margen-box {
+        display: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.3s, color 0.3s;
+        margin-top: 4px;
+    }
+
+    .margen-box.ganancia {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1.5px solid #a5d6a7;
+    }
+
+    .margen-box.perdida {
+        background: #fdecea;
+        color: #c62828;
+        border: 1.5px solid #ef9a9a;
+        animation: shake 0.4s ease;
+    }
+
+    .margen-box.neutro {
+        background: #fff8e1;
+        color: #f57f17;
+        border: 1.5px solid #ffe082;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25%       { transform: translateX(-4px); }
+        75%       { transform: translateX(4px); }
+    }
+
     /* ── Responsive ─────────────────────────────────── */
     @media (max-width: 992px) {
         .create-layout {
@@ -385,6 +423,7 @@
                         required
                         autofocus
                         oninput="actualizarPreview()"
+                        value="{{ nombre|default:'' }}"
                     >
                 </div>
                 <div class="form-group">
@@ -399,6 +438,7 @@
                         class="form-control"
                         value="{{ producto.codigo }}"
                         placeholder="Ej: 7501234567890"
+                        value="{{ codigo|default:'' }}"
                     >
                     <span class="field-hint">
                         <i class="bi bi-info-circle"></i>
@@ -411,24 +451,6 @@
                 <div class="form-row">
                     <!-- Precio venta -->
                     <div class="form-group">
-                        <label for="precio_venta">
-                            <i class="bi bi-tag"></i>
-                            Precio de Venta <span style="color:#dc3545;">*</span>
-                        </label>
-                        <div class="input-prefix-wrapper">
-                            <span class="input-prefix">$</span>
-                            <input
-                                type="number"
-                                id="precio_venta"
-                                name="precio_venta"
-                                class="form-control"
-                                step="0.01"
-                                min="0"
-                                placeholder="0.00"
-                                required
-                                oninput="actualizarPreview()"
-                            >
-                        </div>
                         <label for="precio_compra">
                             <i class="bi bi-tag"></i>
                             Precio de Compra <span style="color:#dc3545;">*</span>
@@ -445,9 +467,37 @@
                                 placeholder="0.00"
                                 required
                                 oninput="actualizarPreview()"
+                                value="{{precio_compra|default:''}}"
                             >
                         </div>
-                    </div>                        
+                        <label for="precio_venta">
+                            <i class="bi bi-tag"></i>
+                            Precio de Venta <span style="color:#dc3545;">*</span>
+                        </label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">$</span>
+                            <input
+                                type="number"
+                                id="precio_venta"
+                                name="precio_venta"
+                                class="form-control"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                                required
+                                oninput="actualizarPreview()"
+                                value="{{precio_venta|default:''}}"
+                            >
+                        </div>
+
+                        <!-- ── Indicador de margen de ganancia ── -->
+                        <div class="margen-box" id="margenBox">
+                            <i id="margenIcono" class="bi bi-graph-up-arrow"></i>
+                            <span id="margenTexto">—</span>
+                        </div>
+
+                    </div>
+                                            
                 </div>
 
                 <div class="section-divider">Proveedor</div>
@@ -463,10 +513,11 @@
                         name="proveedor"
                         class="form-control"
                         onchange="actualizarPreview()"
+                        required
                     >
                         <option value="">— Sin proveedor asignado —</option>
                         {% for proveedor in proveedores %}
-                        <option value="{{ proveedor.id }}">{{ proveedor.nombre }}</option>
+                        <option value="{{ proveedor.id }}" {% if proveedor.id|stringformat:"s" == proveedor_id %}selected{% endif %}>{{ proveedor.nombre }}</option>
                         {% endfor %}
                     </select>
 
@@ -483,11 +534,12 @@
                         </label>
                         <input
                             type="number"
-                            id="stock"
-                            name="stock"
+                            id="stock_minimo"
+                            name="stock_minimo"
                             class="form-control"
                             min="0"
                             placeholder="0"
+                            value="{{stock_minimo|default:''}}"
                         >
                         <span class="field-hint">
                             <i class="bi bi-info-circle"></i>
@@ -504,6 +556,7 @@
                             class="form-control"
                             min="0"
                             placeholder="0"
+                            value="{{stock_maximo|default:''}}"
                         >
                         <span class="field-hint">
                             <i class="bi bi-info-circle"></i>
@@ -570,7 +623,7 @@
     function actualizarPreview() {
         const nombre  = document.getElementById('nombre').value.trim();
         const precio  = parseFloat(document.getElementById('precio_venta').value);
-        const stock   = parseInt(document.getElementById('stock').value);
+        const stock   = parseInt(document.getElementById('stock_minimo').value);
         const select  = document.getElementById('proveedor');
         const provNombre = select.options[select.selectedIndex]?.text || 'Sin proveedor';
 
@@ -602,9 +655,57 @@
 
         // Pulse en el ícono
         const icon = document.getElementById('previewIcon');
-        icon.classList.remove('pulse');
-        void icon.offsetWidth; // reflow
-        icon.classList.add('pulse');
+        if (icon) {
+            icon.classList.remove('pulse');
+            void icon.offsetWidth; // reflow
+            icon.classList.add('pulse');
+        }
+
+        // ── Indicador de margen de ganancia ──────────────────
+        const precioVenta  = parseFloat(document.getElementById('precio_venta').value);
+        const precioCompra = parseFloat(document.getElementById('precio_compra').value);
+        const margenBox    = document.getElementById('margenBox');
+        const margenTexto  = document.getElementById('margenTexto');
+        const margenIcono  = document.getElementById('margenIcono');
+
+        if (!isNaN(precioVenta) && !isNaN(precioCompra) && precioCompra > 0 && precioVenta > 0) {
+            margenBox.style.display = 'flex';
+            margenBox.classList.remove('ganancia', 'perdida', 'neutro');
+
+            const ganancia   = precioVenta - precioCompra;
+            const porcentaje = ((ganancia / precioCompra) * 100).toFixed(1);
+            const gananciaFmt = Math.abs(ganancia).toFixed(2);
+
+            if (ganancia > 0) {
+                // Ganancia positiva
+                margenBox.classList.add('ganancia');
+                margenIcono.className = 'bi bi-graph-up-arrow';
+                margenTexto.textContent =
+                    `Ganancia: $${gananciaFmt} por unidad (${porcentaje}% sobre costo)`;
+
+            } else if (ganancia < 0) {
+                // Pérdida — sin ganancia
+                margenBox.classList.add('perdida');
+                margenIcono.className = 'bi bi-graph-down-arrow';
+                margenTexto.textContent =
+                    `⚠ Pérdida de $${gananciaFmt} por unidad — el precio de venta es menor al costo`;
+
+                // Re-trigger shake animation
+                margenBox.style.animation = 'none';
+                void margenBox.offsetWidth;
+                margenBox.style.animation = '';
+
+            } else {
+                // Precio igual al costo — sin ganancia
+                margenBox.classList.add('neutro');
+                margenIcono.className = 'bi bi-dash-circle';
+                margenTexto.textContent =
+                    'Sin ganancia — el precio de venta es igual al costo';
+            }
+
+        } else {
+            margenBox.style.display = 'none';
+        }
     }
 </script>
 {% endblock %}

@@ -74,12 +74,13 @@ class Lote(models.Model):
     
 
     def save(self, *args, **kwargs):
-
-        hoy = timezone.now().strftime("%Y%m%d")
-        letras_producto = self.producto.nombre[:3].upper()
+        letras_producto = self.producto.nombre[:1].upper()
+        producto_id = str(self.producto.id).zfill(4)
         negocio_id = str(self.negocio.id).zfill(2)
+        hoy = timezone.now().strftime("%y%m%d")
 
-        codigo_generado = f"{letras_producto}{negocio_id}{hoy}"
+        codigo_generado = f"{letras_producto}{producto_id}N{negocio_id}{hoy}"
+
 
         lote_existente = Lote.objects.filter(
             lote=codigo_generado,
@@ -88,17 +89,14 @@ class Lote(models.Model):
         ).first()
 
         if lote_existente and not self.pk:
-            # Actualizamos directamente en BD sin volver a entrar en save()
             Lote.objects.filter(id=lote_existente.id).update(
                 cantidad=lote_existente.cantidad + self.cantidad
             )
 
-            # Sumamos al stock global
             self.producto.stock += self.cantidad
             self.producto.save()
 
-            return  # IMPORTANTE cortar aquí
-
+            return  
         else:
             self.lote = codigo_generado
             super().save(*args, **kwargs)

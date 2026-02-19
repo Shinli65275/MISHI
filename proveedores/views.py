@@ -22,17 +22,27 @@ def crear_proveedor(request):
         telefono = request.POST.get("telefono")
         email = request.POST.get("email")
         direccion = request.POST.get("direccion")
+        
+        proveedor_existente = Proveedor.objects.filter(negocio=negocio, nombre=nombre).first()
+        if proveedor_existente:
+            messages.error(request, "Ya existe un proveedor con ese nombre en este negocio")
+            return render(request, "proveedores/crear_proveedor.html", {
+                "nombre": nombre,
+                "telefono": telefono,
+                "email": email,
+                "direccion": direccion
+            })
+        else:
+            Proveedor.objects.create(
+                negocio=negocio,
+                nombre=nombre,
+                telefono=telefono,
+                email=email,
+                direccion=direccion
+            )
 
-        Proveedor.objects.create(
-            negocio=negocio,
-            nombre=nombre,
-            telefono=telefono,
-            email=email,
-            direccion=direccion
-        )
-
-        return redirect("lista_proveedores")
-
+            messages.success(request, f"Proveedor '{nombre}' creado exitosamente")
+            return redirect("lista_proveedores")
     return render(request, "proveedores/crear_proveedor.html")
 
 @login_required

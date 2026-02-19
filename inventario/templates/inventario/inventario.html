@@ -520,38 +520,41 @@
         <div>
             {% if productos %}
             <div class="productos-grid" id="prodGrid">
-                {% for prod in productos %}
-                <a href="{% url 'detalle_producto' prod.id %}" class="prod-card {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
+{% for prod in productos %}
+<a href="{% url 'detalle_producto' prod.id %}" class="prod-card {{ prod.estado_stock }}">
 
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2px;">
-                        <div class="prod-nombre" title="{{ prod.nombre }}">{{ prod.nombre }}</div>
-                        <span class="stock-badge {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
-                            {% if prod.stock == 0 %}Agotado{% elif prod.stock <= 10 %}Stock bajo{% else %}En stock{% endif %}
-                        </span>
-                    </div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:2px;">
+        <div class="prod-nombre" title="{{ prod.nombre }}">{{ prod.nombre }}</div>
+        <span class="stock-badge {{ prod.estado_stock }}">
+            {% if prod.estado_stock == 'agotado' %}Agotado
+            {% elif prod.estado_stock == 'bajo' %}Stock bajo
+            {% else %}En stock{% endif %}
+        </span>
+    </div>
 
-                    <div class="prod-precio">${{ prod.precio_venta|floatformat:2 }} por unidad</div>
+    <div class="prod-precio">${{ prod.precio_venta|floatformat:2 }} por unidad</div>
 
-                    <div class="prod-stock-row">
-                        <span class="prod-stock-label">Unidades</span>
-                        <span class="prod-stock-val {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}">
-                            {{ prod.stock }}
-                        </span>
-                    </div>
+    <div class="prod-stock-row">
+        <span class="prod-stock-label">Unidades</span>
+        <span class="prod-stock-val {{ prod.estado_stock }}">{{ prod.stock }}</span>
+    </div>
 
-                    <div class="prod-bar-track">
-                        <div class="prod-bar-fill {% if prod.stock == 0 %}agotado{% elif prod.stock <= 10 %}bajo{% else %}ok{% endif %}"
-                             style="width: {% if prod.stock > 100 %}100{% else %}{{ prod.stock }}{% endif %}%;">
-                        </div>
-                    </div>
+    <div class="prod-bar-track">
+        <div class="prod-bar-fill {{ prod.estado_stock }}"
+             style="width: {{ prod.porcentaje_stock }}%;">
+        </div>
+    </div>
 
-                    <div class="prod-footer">
-                        <span><i class="bi bi-layers"></i> {{ prod.num_lotes|default:0 }} lote{{ prod.num_lotes|default:0|pluralize }}</span>
-                        <span class="prod-lotes-badge"><i class="bi bi-arrow-right-short"></i> Ver detalle</span>
-                    </div>
+    <div class="prod-footer">
+        <span><i class="bi bi-layers"></i> {{ prod.num_lotes|default:0 }} lote{{ prod.num_lotes|default:0|pluralize }}</span>
+        {% if prod.stock_minimo != -1 %}
+        <span style="font-size:0.68rem; color:#adb5bd;">Mín: {{ prod.stock_minimo }}</span>
+        {% endif %}
+        <span class="prod-lotes-badge"><i class="bi bi-arrow-right-short"></i> Ver detalle</span>
+    </div>
 
-                </a>
-                {% endfor %}
+</a>
+{% endfor %}
             </div>
             {% else %}
             <div style="background:white; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">

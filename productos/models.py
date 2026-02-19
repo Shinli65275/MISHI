@@ -31,6 +31,33 @@ class Producto(models.Model): #negocio, nombre, proveedor, precio_venta, stock, 
 
     def __str__(self):
         return f"{self.nombre} - {self.negocio.nombre}"
+
+    @property
+    def estado_stock(self):
+        """Retorna 'agotado', 'bajo', o 'ok' considerando stock_minimo si está definido."""
+        if self.stock == 0:
+            return "agotado"
+        
+        
+        if self.stock_minimo != -1 and self.stock <= self.stock_minimo:
+            return "bajo"
+        
+        
+        if self.stock_minimo == -1 and self.stock <= 10:
+            return "bajo"
+        
+        return "ok"
+
+    @property
+    def porcentaje_stock(self):
+        """Porcentaje para la barra de progreso."""
+        if self.stock == 0:
+            return 0
+        # Si tiene stock_maximo definido, usarlo
+        if self.stock_maximo != -1:
+            return min(100, int((self.stock / self.stock_maximo) * 100))
+        # Sin stock_maximo, cap en 100 unidades
+        return min(100, self.stock)
     
 
 
