@@ -103,15 +103,23 @@
         font-weight: 600;
     }
 
-    /* Ocultar texto cuando está colapsado */
     .sidebar.collapsed .sidebar-header h4 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar.collapsed .sidebar-header h4 .menu-text {
         display: none;
     }
 
     .sidebar.collapsed .menu-text {
         display: none;
     }
-
+    .sidebar.collapsed .sidebar-header img {
+    width: 40px;
+    height: 40px;
+    }
     .sidebar-menu {
         list-style: none;
         padding: 0;
@@ -749,6 +757,7 @@
         }
     }
 </style>
+    {% load static %}
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -759,7 +768,10 @@
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h4><i class="bi bi-shop"></i> <span class="menu-text">MISHI</span></h4>
+            <h4>
+                <img src="{% static 'img/MISHI.png' %}" alt="MISHI" style="width:35px; height:35px; object-fit:contain; border-radius:6px;">
+                <span class="menu-text">MISHI</span>
+            </h4>        
         </div>
 
         <ul class="sidebar-menu">
@@ -847,7 +859,7 @@
             {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
                 <a href="{% url 'movimientos_usuarios' %}">
-                    <i class="bi bi-clock-history"></i>
+                    <i class="bi bi-arrow-left-right"></i>
                     <span class="menu-text">Movimientos</span>
                 </a>
             </li>

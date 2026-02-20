@@ -9,85 +9,95 @@ from datetime import datetime
 
 
 def lista_usuarios(request):
-    
+    import unicodedata
+
+    def normalizar(texto):
+        return ''.join(
+            c for c in unicodedata.normalize('NFD', texto)
+            if unicodedata.category(c) != 'Mn'
+        ).lower()
+
     negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio
+    q = request.GET.get('q', '').strip()
 
     usuarios = UsuarioNegocio.objects.filter(
         negocio=negocio,
         activo=True
     ).select_related('usuario')
 
-    # Agregar conteo de movimientos a cada usuario
+    # Filtro con normalización en Python (por si la BD no soporta unaccent)
+    if q:
+        q_norm = normalizar(q)
+        usuarios = [
+            u for u in usuarios
+            if q_norm in normalizar(u.usuario.get_full_name() or '')
+            or q_norm in normalizar(u.usuario.username or '')
+            or q_norm in normalizar(u.usuario.email or '')
+        ]
+
     for u in usuarios:
-        ventas = Venta.objects.filter(usuario=u).count()
-        compras = Compra.objects.filter(usuario=u).count()
-        u.total_movimientos = ventas + compras
-        u.num_ventas = ventas
-        u.num_compras = compras
+        u.num_ventas  = Venta.objects.filter(usuario=u).count()
+        u.num_compras = Compra.objects.filter(usuario=u).count()
+        u.total_movimientos = u.num_ventas + u.num_compras
 
     return render(request, 'movimientos/lista_usuarios.html', {
         'usuarios': usuarios,
-        'total_ventas': Venta.objects.filter(usuario__in=usuarios).count(),
-        'total_compras': Compra.objects.filter(usuario__in=usuarios).count(),
-         'total_usuarios': UsuarioNegocio.objects.filter(negocio=negocio, activo=True).count()
-        
+        'total_usuarios': len(usuarios),
+        'total_ventas':  sum(u.num_ventas  for u in usuarios),
+        'total_compras': sum(u.num_compras for u in usuarios),
+        'q': q,
     })
 
 
 def dias_usuario(request, usuario_id):
-    """Muestra los días en que el usuario tuvo actividad con un resumen por día."""
     negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio
     usuario = get_object_or_404(UsuarioNegocio, id=usuario_id, negocio=negocio)
 
-    # Ventas agrupadas por día
+    fecha_filtro = request.GET.get('fecha', '').strip()
+
+    ventas_qs  = Venta.objects.filter(usuario=usuario)
+    compras_qs = Compra.objects.filter(usuario=usuario)
+
+    if fecha_filtro:
+        ventas_qs  = ventas_qs.filter(fecha__date=fecha_filtro)
+        compras_qs = compras_qs.filter(fecha__date=fecha_filtro)
+
     ventas_por_dia = (
-        Venta.objects.filter(usuario=usuario)
-        .annotate(dia=TruncDate('fecha'))
+        ventas_qs.annotate(dia=TruncDate('fecha'))
         .values('dia')
-        .annotate(
-            total_monto=Sum('total'),
-            cantidad=Count('id')
-        )
+        .annotate(total_monto=Sum('total'), cantidad=Count('id'))
         .order_by('-dia')
     )
-
-    # Compras agrupadas por día
     compras_por_dia = (
-        Compra.objects.filter(usuario=usuario)
-        .annotate(dia=TruncDate('fecha'))
+        compras_qs.annotate(dia=TruncDate('fecha'))
         .values('dia')
-        .annotate(
-            total_monto=Sum('total'),
-            cantidad=Count('id')
-        )
+        .annotate(total_monto=Sum('total'), cantidad=Count('id'))
         .order_by('-dia')
     )
 
     dias = {}
-
     for v in ventas_por_dia:
         dia = v['dia']
         if dia not in dias:
             dias[dia] = {'dia': dia, 'ventas': 0, 'compras': 0, 'monto_ventas': 0, 'monto_compras': 0}
-        dias[dia]['ventas'] = v['cantidad']
+        dias[dia]['ventas']       = v['cantidad']
         dias[dia]['monto_ventas'] = v['total_monto']
-
     for c in compras_por_dia:
         dia = c['dia']
         if dia not in dias:
             dias[dia] = {'dia': dia, 'ventas': 0, 'compras': 0, 'monto_ventas': 0, 'monto_compras': 0}
-        dias[dia]['compras'] = c['cantidad']
+        dias[dia]['compras']       = c['cantidad']
         dias[dia]['monto_compras'] = c['total_monto']
 
-    # Ordenar por fecha descendente
     dias_lista = sorted(dias.values(), key=lambda x: x['dia'], reverse=True)
 
     return render(request, 'movimientos/dias_usuario.html', {
-        'usuario': usuario,
-        'dias': dias_lista,
-        'total_ventas_count': sum(d['ventas'] for d in dias_lista),
+        'usuario':             usuario,
+        'dias':                dias_lista,
+        'total_ventas_count':  sum(d['ventas']  for d in dias_lista),
         'total_compras_count': sum(d['compras'] for d in dias_lista),
-        'total_monto_ventas': sum(d['monto_ventas'] for d in dias_lista),
+        'total_monto_ventas':  sum(d['monto_ventas'] or 0 for d in dias_lista),
+        'fecha_filtro':        fecha_filtro,
     })
 
 
@@ -139,6 +149,7 @@ def movimientos_dia(request, usuario_id, fecha):
         'usuario': usuario,
         'fecha': fecha_dt,
         'movimientos': movimientos,
+        'num_ventas': ventas.count(),
+        'num_compras': compras.count(),
         'total_ventas': sum(m['total'] for m in movimientos if m['tipo'] == 'Venta'),
-        'total_compras': sum(m['total'] for m in movimientos if m['tipo'] == 'Compra'),
     })

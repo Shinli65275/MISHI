@@ -1,220 +1,19 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ fecha|date:"d/m/Y" }} - {{ usuario.usuario.username }} - MISHI{% endblock %}
-
 {% block extra_css %}
 <style>
-     /* ── Modal ticket ── */
-    .ticket-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.55);
-        z-index: 1050;
-        align-items: center;
-        justify-content: center;
-    }
+    .page-header { background: white; border-radius: 15px; padding: 20px 25px; margin-bottom: 22px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .page-header h2 { color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.4rem; }
 
-    .ticket-overlay.open { display: flex; }
-
-    .ticket-modal {
-        background: white;
-        border-radius: 16px;
-        width: 380px;
-        max-width: 95vw;
-        max-height: 92vh;
-        overflow-y: auto;
-        box-shadow: 0 24px 70px rgba(0,0,0,0.28);
-        animation: slideModal 0.25s ease;
-    }
-
-    @keyframes slideModal {
-        from { transform: translateY(20px); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
-    }
-
-    .ticket-modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 18px 22px;
-        border-radius: 16px 16px 0 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .ticket-modal-header h6 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-
-    .btn-close-modal {
-        background: rgba(255,255,255,0.2);
-        border: none;
-        color: white;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-        font-size: 1rem;
-    }
-
-    .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
-
-    #ticketPreview {
-        padding: 26px 28px;
-        font-family: 'Courier New', Courier, monospace;
-        background: #fafafa;
-    }
-
-    .ticket-store-name { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; color: #2c3e50; margin-bottom: 2px; }
-    .ticket-store-sub  { text-align: center; font-size: 0.72rem; color: #6c757d; margin-bottom: 16px; letter-spacing: 1px; }
-    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 12px 0; }
-    .ticket-divider.solid { border-top: 2px solid #2c3e50; }
-    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 5px; }
-    .ticket-info-row span:first-child { color: #6c757d; }
-    .ticket-info-row span:last-child  { font-weight: 700; }
-
-    .ticket-items-header {
-        display: grid;
-        grid-template-columns: 1fr 42px 80px;
-        gap: 4px;
-        font-size: 0.68rem;
-        font-weight: 700;
-        color: #2c3e50;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        padding: 6px 0;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .ticket-item-row {
-        display: grid;
-        grid-template-columns: 1fr 42px 80px;
-        gap: 4px;
-        font-size: 0.78rem;
-        color: #495057;
-        padding: 6px 0;
-        border-bottom: 1px dotted #e9ecef;
-        align-items: center;
-    }
-
-    .ticket-item-row .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
-    .ticket-footer-text { text-align: center; font-size: 0.7rem; color: #adb5bd; margin-top: 4px; line-height: 1.7; }
-
-    .ticket-modal-footer {
-        padding: 16px 22px;
-        border-top: 1px solid #f0f0f0;
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-        background: white;
-        border-radius: 0 0 16px 16px;
-    }
-
-    .btn-print {
-        padding: 10px 22px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
-    }
-
-    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
-
-    .btn-cerrar-ticket {
-        padding: 10px 18px;
-        background: white;
-        color: #6c757d;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-    }
-
-    .btn-cerrar-ticket:hover { background: #f8f9fa; }
-
-    @media print {
-        body * { visibility: hidden !important; }
-        #ticketPrintArea, #ticketPrintArea * { visibility: visible !important; }
-        #ticketPrintArea {
-            position: fixed !important;
-            inset: 0 !important;
-            display: flex !important;
-            justify-content: center !important;
-            padding: 10px !important;
-            background: white !important;
-        }
-        #ticketPreview { width: 280px !important; background: white !important; }
-    }
-
-
-    .btn-detalle {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 13px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 7px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    }
-    .btn-detalle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
-    .page-header {
-        background: white; border-radius: 15px;
-        padding: 20px 25px; margin-bottom: 22px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        display: flex; justify-content: space-between;
-        align-items: center; flex-wrap: wrap; gap: 12px;
-    }
-    .page-header h2 {
-        color: #2c3e50; margin: 0;
-        display: flex; align-items: center; gap: 10px;
-        font-size: 1.4rem;
-    }
-
-    .breadcrumb-custom {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 0.83rem; color: #adb5bd; margin-bottom: 18px;
-    }
+    .breadcrumb-custom { display: flex; align-items: center; gap: 8px; font-size: 0.83rem; color: #adb5bd; margin-bottom: 18px; flex-wrap: wrap; }
     .breadcrumb-custom a { color: #667eea; text-decoration: none; font-weight: 600; }
     .breadcrumb-custom a:hover { text-decoration: underline; }
     .breadcrumb-custom i { font-size: 0.7rem; }
 
-    .kpi-row {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 16px; margin-bottom: 22px;
-    }
-    .kpi-card {
-        background: white; border-radius: 14px;
-        padding: 18px 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        display: flex; align-items: center; gap: 14px;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+    .kpi-card { background: white; border-radius: 14px; padding: 18px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 14px; transition: transform 0.2s, box-shadow 0.2s; }
     .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
-    .kpi-ico {
-        width: 46px; height: 46px; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; flex-shrink: 0;
-    }
+    .kpi-ico { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
     .kpi-ico.green  { background: #e8fff3; color: #43e97b; }
     .kpi-ico.blue   { background: #e8f6ff; color: #4facfe; }
     .kpi-ico.purple { background: #f0f2ff; color: #667eea; }
@@ -222,77 +21,120 @@
     .kpi-info .kpi-label { font-size: 0.72rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.6px; }
     .kpi-info .kpi-val   { font-size: 1.55rem; font-weight: 800; color: #2c3e50; line-height: 1.1; }
 
-    .main-card {
-        background: white; border-radius: 14px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden;
-    }
-    .table-header {
-        padding: 16px 20px; border-bottom: 2px solid #f0f0f0;
-        font-size: 0.88rem; font-weight: 600; color: #2c3e50;
-        display: flex; align-items: center; gap: 8px;
-    }
+    .main-card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-header { padding: 16px 20px; border-bottom: 2px solid #f0f0f0; font-size: 0.88rem; font-weight: 600; color: #2c3e50; display: flex; align-items: center; gap: 8px; }
     .table-header i { color: #667eea; }
 
     .mov-table { width: 100%; border-collapse: collapse; }
-    .mov-table thead th {
-        padding: 12px 20px;
-        font-size: 0.72rem; font-weight: 700;
-        color: #adb5bd; text-transform: uppercase;
-        letter-spacing: 0.6px; background: #fafbff;
-        border-bottom: 2px solid #f0f0f0; white-space: nowrap;
-    }
-    .mov-table tbody tr {
-        border-bottom: 1px solid #f8f9fa; transition: background 0.15s;
-    }
+    .mov-table thead th { padding: 12px 20px; font-size: 0.72rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.6px; background: #fafbff; border-bottom: 2px solid #f0f0f0; white-space: nowrap; }
+    .mov-table tbody tr { border-bottom: 1px solid #f8f9fa; transition: background 0.15s; }
     .mov-table tbody tr:hover { background: #fafbff; }
     .mov-table tbody tr:last-child { border-bottom: none; }
-    .mov-table tbody td {
-        padding: 16px 20px; font-size: 0.88rem;
-        color: #2c3e50; vertical-align: middle;
-    }
+    .mov-table tbody td { padding: 16px 20px; font-size: 0.88rem; color: #2c3e50; vertical-align: middle; }
 
-    .tipo-badge {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 5px 13px; border-radius: 20px;
-        font-size: 0.8rem; font-weight: 700;
-    }
-    .tipo-badge.venta  {
-        background: linear-gradient(135deg, rgba(67,233,123,0.15), rgba(56,249,215,0.15));
-        color: #2e7d32; border: 1px solid rgba(67,233,123,0.3);
-    }
-    .tipo-badge.compra {
-        background: linear-gradient(135deg, rgba(79,172,254,0.15), rgba(0,242,254,0.15));
-        color: #0277bd; border: 1px solid rgba(79,172,254,0.3);
-    }
+    .tipo-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+    .tipo-badge.venta  { background: linear-gradient(135deg, rgba(67,233,123,0.15), rgba(56,249,215,0.15)); color: #2e7d32; border: 1px solid rgba(67,233,123,0.3); }
+    .tipo-badge.compra { background: linear-gradient(135deg, rgba(79,172,254,0.15), rgba(0,242,254,0.15)); color: #0277bd; border: 1px solid rgba(79,172,254,0.3); }
 
-    .id-cell {
-        font-family: monospace; font-size: 0.85rem;
-        color: #adb5bd; font-weight: 600;
-    }
+    .id-cell { font-family: monospace; font-size: 0.85rem; color: #adb5bd; font-weight: 600; }
     .hora-cell { font-size: 0.83rem; color: #adb5bd; }
-
     .total-cell { font-size: 1rem; font-weight: 800; }
     .total-cell.venta  { color: #2e7d32; }
     .total-cell.compra { color: #0277bd; }
+    .prods-cell { display: inline-flex; align-items: center; gap: 5px; background: #f0f2ff; color: #667eea; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
 
-    .prods-cell {
-        display: inline-flex; align-items: center; gap: 5px;
-        background: #f0f2ff; color: #667eea;
-        padding: 3px 10px; border-radius: 20px;
-        font-size: 0.78rem; font-weight: 700;
-    }
+    /* Botón ticket */
+    .btn-detalle { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 7px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn-detalle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
 
-    .empty-state {
-        text-align: center; padding: 50px 20px; color: #adb5bd;
-    }
+    /* Modal ticket */
+    .ticket-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1050; align-items: center; justify-content: center; padding: 16px; }
+    .ticket-overlay.open { display: flex; }
+    .ticket-modal { background: white; border-radius: 16px; width: 380px; max-width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 70px rgba(0,0,0,0.28); animation: slideModal 0.25s ease; }
+    @keyframes slideModal { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .ticket-modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px 22px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .ticket-modal-header h6 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .btn-close-modal { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; font-size: 1rem; }
+    .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
+    #ticketPreview { padding: 26px 28px; font-family: 'Courier New', Courier, monospace; background: #fafafa; }
+    .ticket-store-name { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; color: #2c3e50; margin-bottom: 2px; }
+    .ticket-store-sub  { text-align: center; font-size: 0.72rem; color: #6c757d; margin-bottom: 16px; letter-spacing: 1px; }
+    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 12px 0; }
+    .ticket-divider.solid { border-top: 2px solid #2c3e50; }
+    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 5px; }
+    .ticket-info-row span:first-child { color: #6c757d; }
+    .ticket-info-row span:last-child  { font-weight: 700; }
+    .ticket-items-header { display: grid; grid-template-columns: 1fr 42px 80px; gap: 4px; font-size: 0.68rem; font-weight: 700; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 0; border-bottom: 1px solid #dee2e6; }
+    .ticket-item-row { display: grid; grid-template-columns: 1fr 42px 80px; gap: 4px; font-size: 0.78rem; color: #495057; padding: 6px 0; border-bottom: 1px dotted #e9ecef; align-items: center; }
+    .ticket-item-row .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+    .ticket-footer-text { text-align: center; font-size: 0.7rem; color: #adb5bd; margin-top: 4px; line-height: 1.7; }
+    .ticket-modal-footer { padding: 16px 22px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; justify-content: flex-end; background: white; border-radius: 0 0 16px 16px; }
+    .btn-print { padding: 10px 22px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
+    .btn-cerrar-ticket { padding: 10px 18px; background: white; color: #6c757d; border: 2px solid #e9ecef; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+    .btn-cerrar-ticket:hover { background: #f8f9fa; }
+
+    .empty-state { text-align: center; padding: 50px 20px; color: #adb5bd; }
     .empty-state i { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.35; }
 
-    @media (max-width: 768px) {
-        .kpi-row { grid-template-columns: 1fr 1fr; }
-        .hide-mobile { display: none; }
+    @media print {
+        body * { visibility: hidden !important; }
+        #ticketPrintArea, #ticketPrintArea * { visibility: visible !important; }
+        #ticketPrintArea { position: fixed !important; inset: 0 !important; display: flex !important; justify-content: center !important; padding: 10px !important; background: white !important; }
+        #ticketPreview { width: 280px !important; background: white !important; }
     }
-    @media (max-width: 480px) {
-        .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ── Tablet ── */
+    @media (max-width: 900px) {
+        .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .kpi-card { padding: 14px 16px; }
+        .kpi-ico { width: 38px; height: 38px; font-size: 1rem; }
+        .kpi-info .kpi-val { font-size: 1.25rem; }
+        .hide-tablet { display: none; }
+        .mov-table thead th, .mov-table tbody td { padding: 12px 14px; }
+    }
+
+    /* ── Mobile: tabla → tarjetas ── */
+    @media (max-width: 540px) {
+        .page-header { padding: 14px 16px; margin-bottom: 14px; }
+        .page-header h2 { font-size: 1.1rem; }
+        .kpi-row { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+        .kpi-card { padding: 12px 14px; gap: 10px; border-radius: 12px; }
+        .kpi-ico { width: 36px; height: 36px; font-size: 0.9rem; border-radius: 9px; }
+        .kpi-info .kpi-label { font-size: 0.64rem; }
+        .kpi-info .kpi-val   { font-size: 1.15rem; }
+
+        .mov-table thead { display: none; }
+        .mov-table tbody tr {
+            display: flex; flex-direction: column;
+            background: white; border: 1.5px solid #f0f0f0; border-radius: 12px;
+            margin: 0 14px 10px; padding: 14px 16px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            border-bottom: 1.5px solid #f0f0f0 !important;
+        }
+        .mov-table tbody tr:last-child { margin-bottom: 14px; }
+        .mov-table tbody td { padding: 5px 0; border: none; font-size: 0.86rem; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Fila tipo: sin label, más destacada */
+        .td-tipo { border-bottom: 1px dashed #f0f0f0 !important; padding-bottom: 10px !important; }
+        .td-tipo::before { display: none; }
+
+        /* Labels */
+        .td-id::before      { content: "ID"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
+        .td-prods::before   { content: "Productos"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
+        .td-total::before   { content: "Total"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
+        .td-hora::before    { content: "Hora"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
+        .td-accion::before  { display: none; }
+        .td-accion { padding-top: 10px !important; }
+        .btn-detalle { width: 100%; justify-content: center; padding: 10px; font-size: 0.85rem; }
+    }
+
+    @media (max-width: 380px) {
+        .kpi-row { gap: 8px; }
+        .kpi-info .kpi-label { font-size: 0.6rem; }
     }
 </style>
 {% endblock %}
@@ -300,49 +142,39 @@
 {% block content %}
 <div class="container-fluid">
 
-
+    <div class="breadcrumb-custom">
+        <a href="{% url 'movimientos_usuarios' %}"><i class="bi bi-arrow-left-right"></i> Movimientos</a>
+        <i class="bi bi-chevron-right"></i>
+        <a href="{% url 'movimientos_dias' usuario.id %}">{{ usuario.usuario.get_full_name|default:usuario.usuario.username }}</a>
+        <i class="bi bi-chevron-right"></i>
+        <span>{{ fecha|date:"d/m/Y" }}</span>
+    </div>
 
     <div class="page-header">
         <h2><i class="bi bi-activity"></i> {{ fecha|date:"d \d\e F \d\e Y" }}</h2>
     </div>
 
-    <!-- KPIs -->
     <div class="kpi-row">
         <div class="kpi-card">
             <div class="kpi-ico purple"><i class="bi bi-list-check"></i></div>
-            <div class="kpi-info">
-                <div class="kpi-label">Movimientos</div>
-                <div class="kpi-val">{{ movimientos|length }}</div>
-            </div>
+            <div class="kpi-info"><div class="kpi-label">Movimientos</div><div class="kpi-val">{{ movimientos|length }}</div></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-ico green"><i class="bi bi-cart-check-fill"></i></div>
-            <div class="kpi-info">
-                <div class="kpi-label">Ventas</div>
-                <div class="kpi-val">{{ num_ventas }}</div>
-            </div>
+            <div class="kpi-info"><div class="kpi-label">Ventas</div><div class="kpi-val">{{ num_ventas }}</div></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-ico blue"><i class="bi bi-bag-check-fill"></i></div>
-            <div class="kpi-info">
-                <div class="kpi-label">Compras</div>
-                <div class="kpi-val">{{ num_compras }}</div>
-            </div>
+            <div class="kpi-info"><div class="kpi-label">Compras</div><div class="kpi-val">{{ num_compras }}</div></div>
         </div>
         <div class="kpi-card">
             <div class="kpi-ico orange"><i class="bi bi-cash-stack"></i></div>
-            <div class="kpi-info">
-                <div class="kpi-label">Monto ventas</div>
-                <div class="kpi-val">${{ total_ventas|floatformat:0 }}</div>
-            </div>
+            <div class="kpi-info"><div class="kpi-label">Monto ventas</div><div class="kpi-val">${{ total_ventas|floatformat:0 }}</div></div>
         </div>
     </div>
 
-    <!-- Tabla de movimientos -->
     <div class="main-card">
-        <div class="table-header">
-            <i class="bi bi-activity"></i> Movimientos del día
-        </div>
+        <div class="table-header"><i class="bi bi-activity"></i> Movimientos del día</div>
         {% if movimientos %}
         <table class="mov-table">
             <thead>
@@ -351,37 +183,25 @@
                     <th>Tipo</th>
                     <th>Productos</th>
                     <th>Total</th>
-                    <th class="hide-mobile">Hora</th>
+                    <th class="hide-tablet">Hora</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 {% for mov in movimientos %}
                 <tr>
-                    <td class="id-cell">#{{ mov.id }}</td>
-                    <td>
+                    <td class="td-id id-cell">#{{ mov.id }}</td>
+                    <td class="td-tipo">
                         <span class="tipo-badge {{ mov.tipo|lower }}">
-                            {% if mov.tipo == 'Venta' %}
-                            <i class="bi bi-cart-check"></i>
-                            {% else %}
-                            <i class="bi bi-bag-check"></i>
-                            {% endif %}
+                            {% if mov.tipo == 'Venta' %}<i class="bi bi-cart-check"></i>
+                            {% else %}<i class="bi bi-bag-check"></i>{% endif %}
                             {{ mov.tipo }}
                         </span>
                     </td>
-                    <td>
-                        <span class="prods-cell">
-                            <i class="bi bi-box-seam"></i>
-                            {{ mov.total_productos }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="total-cell {{ mov.tipo|lower }}">${{ mov.total|floatformat:2 }}</span>
-                    </td>
-                    <td class="hide-mobile hora-cell">
-                        <i class="bi bi-clock"></i> {{ mov.fecha|date:"H:i" }}
-                    </td>
-                    <td>
+                    <td class="td-prods"><span class="prods-cell"><i class="bi bi-box-seam"></i> {{ mov.total_productos }}</span></td>
+                    <td class="td-total"><span class="total-cell {{ mov.tipo|lower }}">${{ mov.total|floatformat:2 }}</span></td>
+                    <td class="td-hora hide-tablet hora-cell"><i class="bi bi-clock"></i> {{ mov.fecha|date:"H:i" }}</td>
+                    <td class="td-accion">
                         <button class="btn-detalle" onclick="verTicket(
                             '{{ mov.id }}',
                             '{{ mov.tipo }}',
@@ -404,8 +224,9 @@
         </div>
         {% endif %}
     </div>
-
 </div>
+
+<!-- Modal Ticket -->
 <div class="ticket-overlay" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
     <div class="ticket-modal">
         <div class="ticket-modal-header">
@@ -428,10 +249,7 @@
                 </div>
                 <div id="tItems"></div>
                 <hr class="ticket-divider solid">
-                <div class="ticket-total-row">
-                    <span>TOTAL</span>
-                    <span id="tTotal">$0.00</span>
-                </div>
+                <div class="ticket-total-row"><span>TOTAL</span><span id="tTotal">$0.00</span></div>
                 <hr class="ticket-divider">
                 <div class="ticket-footer-text">
                     Documento generado por MISHI<br>
@@ -441,12 +259,8 @@
             </div>
         </div>
         <div class="ticket-modal-footer">
-            <button class="btn-cerrar-ticket" onclick="cerrarTicket()">
-                <i class="bi bi-x-circle"></i> Cerrar
-            </button>
-            <button class="btn-print" onclick="window.print()">
-                <i class="bi bi-printer-fill"></i> Imprimir
-            </button>
+            <button class="btn-cerrar-ticket" onclick="cerrarTicket()"><i class="bi bi-x-circle"></i> Cerrar</button>
+            <button class="btn-print" onclick="window.print()"><i class="bi bi-printer-fill"></i> Imprimir</button>
         </div>
     </div>
 </div>
@@ -459,22 +273,18 @@ function verTicket(id, tipo, monto, totalProductos, fecha, hora) {
     document.getElementById('tHora').textContent        = hora;
     document.getElementById('tTotal').textContent       = '$' + parseFloat(monto).toFixed(2);
     document.getElementById('tFechaFooter').textContent = fecha + ' ' + hora;
-
     document.getElementById('tItems').innerHTML = `
         <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
             <span class="item-name">${tipo} · ${totalProductos} producto${totalProductos != 1 ? 's' : ''}</span>
             <span style="text-align:right; font-weight:700;">$${parseFloat(monto).toFixed(2)}</span>
         </div>`;
-
     document.getElementById('ticketOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
-
 function cerrarTicket() {
     document.getElementById('ticketOverlay').classList.remove('open');
     document.body.style.overflow = '';
 }
-
 function cerrarSiOverlay(e) {
     if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
 }
