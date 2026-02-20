@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Actividad de {{ usuario.usuario.username }} - MISHI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 15px;
+        padding: 20px 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-header h2 {
+        color: #2c3e50; margin: 0;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 1.4rem;
+    }
+
+    .breadcrumb-custom {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 0.83rem; color: #adb5bd;
+        margin-bottom: 18px;
+    }
+    .breadcrumb-custom a { color: #667eea; text-decoration: none; font-weight: 600; }
+    .breadcrumb-custom a:hover { text-decoration: underline; }
+    .breadcrumb-custom i { font-size: 0.7rem; }
+
+    .kpi-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+    .kpi-card {
+        background: white; border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex; align-items: center; gap: 14px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+    .kpi-ico {
+        width: 46px; height: 46px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    .kpi-ico.purple { background: #f0f2ff; color: #667eea; }
+    .kpi-ico.green  { background: #e8fff3; color: #43e97b; }
+    .kpi-ico.blue   { background: #e8f6ff; color: #4facfe; }
+    .kpi-ico.orange { background: #fffbe8; color: #f7971e; }
+    .kpi-info .kpi-label { font-size: 0.72rem; font-weight: 600; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.6px; }
+    .kpi-info .kpi-val   { font-size: 1.55rem; font-weight: 800; color: #2c3e50; line-height: 1.1; }
+
+    .user-hero {
+        background: white;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .user-hero-avatar {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-weight: 700; font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    .user-hero-name  { font-size: 1.1rem; font-weight: 700; color: #2c3e50; }
+    .user-hero-meta  { font-size: 0.8rem; color: #adb5bd; display: flex; align-items: center; gap: 10px; }
+    .rol-badge {
+        padding: 4px 11px; border-radius: 20px;
+        font-size: 0.73rem; font-weight: 700;
+    }
+    .rol-ADMIN         { background: #f0f2ff; color: #667eea; }
+    .rol-VENDEDOR      { background: #e8fff3; color: #2e7d32; }
+    .rol-ALMACEN       { background: #e8f6ff; color: #0277bd; }
+    .rol-ALMACEN_ADMIN { background: #fffbe8; color: #e65100; }
+
+    .main-card {
+        background: white; border-radius: 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .table-header {
+        padding: 16px 20px;
+        border-bottom: 2px solid #f0f0f0;
+        font-size: 0.88rem; font-weight: 600; color: #2c3e50;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .table-header i { color: #667eea; }
+
+    .mov-table { width: 100%; border-collapse: collapse; }
+    .mov-table thead th {
+        padding: 12px 20px;
+        font-size: 0.72rem; font-weight: 700;
+        color: #adb5bd; text-transform: uppercase;
+        letter-spacing: 0.6px; background: #fafbff;
+        border-bottom: 2px solid #f0f0f0; white-space: nowrap;
+    }
+    .mov-table tbody tr {
+        border-bottom: 1px solid #f8f9fa;
+        transition: background 0.15s; cursor: pointer;
+    }
+    .mov-table tbody tr:hover { background: #fafbff; }
+    .mov-table tbody tr:last-child { border-bottom: none; }
+    .mov-table tbody td {
+        padding: 16px 20px; font-size: 0.88rem;
+        color: #2c3e50; vertical-align: middle;
+    }
+
+    .fecha-display { display: flex; flex-direction: column; gap: 2px; }
+    .fecha-dia     { font-size: 1rem; font-weight: 700; color: #2c3e50; }
+    .fecha-semana  { font-size: 0.75rem; color: #adb5bd; }
+
+    .mini-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 4px 10px; border-radius: 20px;
+        font-size: 0.78rem; font-weight: 700;
+    }
+    .mini-badge.venta  { background: #e8fff3; color: #2e7d32; }
+    .mini-badge.compra { background: #e8f6ff; color: #0277bd; }
+    .mini-badge.zero   { background: #f8f9fa; color: #adb5bd; }
+
+    .monto-cell { font-weight: 700; }
+    .monto-cell.venta  { color: #2e7d32; }
+    .monto-cell.compra { color: #0277bd; }
+    .monto-cell.zero   { color: #adb5bd; font-weight: 400; }
+
+    .btn-ver {
+        padding: 7px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white; border-radius: 9px;
+        font-weight: 600; font-size: 0.82rem;
+        text-decoration: none;
+        display: inline-flex; align-items: center; gap: 6px;
+        transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-ver:hover {
+        color: white; transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(102,126,234,0.35);
+    }
+
+    .empty-state {
+        text-align: center; padding: 50px 20px; color: #adb5bd;
+    }
+    .empty-state i { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.35; }
+
+    @media (max-width: 768px) {
+        .kpi-row { grid-template-columns: 1fr 1fr; }
+        .hide-mobile { display: none; }
+    }
+    @media (max-width: 480px) {
+        .kpi-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+
+    <div class="page-header">
+        <h2><i class="bi bi-calendar3"></i> Actividad por día</h2>
+    </div>
+
+    <!-- Hero usuario -->
+    <div class="user-hero">
+        <div class="user-hero-avatar">{{ usuario.usuario.username|first|upper }}</div>
+        <div>
+            <div class="user-hero-name">{{ usuario.usuario.get_full_name|default:usuario.usuario.username }}</div>
+            <div class="user-hero-meta">
+                <span class="rol-badge rol-{{ usuario.rol }}">{{ usuario.get_rol_display }}</span>
+                <span><i class="bi bi-envelope"></i> {{ usuario.usuario.email|default:"Sin email" }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+        <div class="kpi-card">
+            <div class="kpi-ico purple"><i class="bi bi-calendar-range"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Días activos</div>
+                <div class="kpi-val">{{ dias|length }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico green"><i class="bi bi-cart-check-fill"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Total ventas</div>
+                <div class="kpi-val">{{ total_ventas_count }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico blue"><i class="bi bi-bag-check-fill"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Total compras</div>
+                <div class="kpi-val">{{ total_compras_count }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico orange"><i class="bi bi-cash-stack"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Monto ventas</div>
+                <div class="kpi-val">${{ total_monto_ventas|floatformat:0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de días -->
+    <div class="main-card">
+        <div class="table-header">
+            <i class="bi bi-calendar3"></i> Días con actividad
+        </div>
+        {% if dias %}
+        <table class="mov-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Ventas</th>
+                    <th class="hide-mobile">Monto ventas</th>
+                    <th>Compras</th>
+                    <th class="hide-mobile">Monto compras</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dia in dias %}
+                <tr onclick="window.location='{% url 'movimientos_dia' usuario.id dia.dia|date:'Y-m-d' %}'">
+                    <td>
+                        <div class="fecha-display">
+                            <span class="fecha-dia">{{ dia.dia|date:"d/m/Y" }}</span>
+                            <span class="fecha-semana">{{ dia.dia|date:"l" }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if dia.ventas %}
+                        <span class="mini-badge venta">
+                            <i class="bi bi-cart-check"></i> {{ dia.ventas }}
+                        </span>
+                        {% else %}
+                        <span class="mini-badge zero">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="hide-mobile">
+                        {% if dia.monto_ventas %}
+                        <span class="monto-cell venta">${{ dia.monto_ventas|floatformat:2 }}</span>
+                        {% else %}
+                        <span class="monto-cell zero">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if dia.compras %}
+                        <span class="mini-badge compra">
+                            <i class="bi bi-bag-check"></i> {{ dia.compras }}
+                        </span>
+                        {% else %}
+                        <span class="mini-badge zero">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="hide-mobile">
+                        {% if dia.monto_compras %}
+                        <span class="monto-cell compra">${{ dia.monto_compras|floatformat:2 }}</span>
+                        {% else %}
+                        <span class="monto-cell zero">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'movimientos_dia' usuario.id dia.dia|date:'Y-m-d' %}" class="btn-ver">
+                            Ver detalle <i class="bi bi-arrow-right-short"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <p style="margin:0; font-size:0.95rem;">Este usuario no tiene movimientos registrados.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

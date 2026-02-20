@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from inventario.models import Lote, Producto
 from django.contrib.auth.decorators import login_required
 from negocios.utils import get_negocio_activo
+from usuarios.models import UsuarioNegocio
 from ventas.models import DetalleVenta, Venta, Ingreso
 from django.db import transaction
 import json
@@ -64,7 +65,8 @@ from django.views.decorators.csrf import csrf_exempt
 @transaction.atomic
 def guardar_venta(request):
     negocio = get_negocio_activo(request)
-
+    usuario = request.user
+    print("Usuario que realiza la venta:", usuario.username)
     if request.method != "POST":
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
@@ -75,7 +77,7 @@ def guardar_venta(request):
             if productos is None:
                 return JsonResponse({"error": "Payload inválido"}, status=400)
 
-            venta            = Venta.objects.create(negocio=negocio, total=0)
+            venta            = Venta.objects.create(negocio=negocio, total=0,usuario=UsuarioNegocio.objects.filter(usuario=usuario, negocio=negocio).first())
             total            = 0
             total_productos  = 0
 

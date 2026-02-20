@@ -2,13 +2,16 @@ from django.db import models
 from inventario.models import Producto
 from negocios.models import Negocio 
 from django.db import transaction
+from usuarios.models import UsuarioNegocio
 
-class Venta(models.Model):
+class Venta(models.Model): # negocio,fecha,total,total_productos,usuario
 
     negocio = models.ForeignKey(Negocio, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_productos = models.IntegerField(default=0)
+    usuario = models.ForeignKey(UsuarioNegocio, on_delete=models.DO_NOTHING, default=None)   
+
 
     def __str__(self):
         return f"Venta #{self.id} - ${self.total}"

@@ -4,6 +4,7 @@ from negocios.models import Negocio
 from productos.models import Producto
 from proveedores.models import Proveedor
 from django.utils import timezone
+from usuarios.models import UsuarioNegocio
 
 class Compra(models.Model): # Negocio, Proveedor, Numero factura, Total, Total productos, Fecha
     negocio = models.ForeignKey(Negocio, on_delete=models.CASCADE)
@@ -15,6 +16,7 @@ class Compra(models.Model): # Negocio, Proveedor, Numero factura, Total, Total p
     total_productos = models.PositiveIntegerField(default=0)
 
     fecha = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(UsuarioNegocio, on_delete=models.DO_NOTHING, default=None)   
 
     def save(self, *args, **kwargs):
         if not self.numero_factura:

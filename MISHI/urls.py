@@ -17,11 +17,8 @@ urlpatterns = [
     path("egresos/", lista_egresos, name="egresos"),
     path("egresos_fijos/", lista_egresos_fijos, name="egresos_fijos"),
     path("graficas/", include("graficas.urls")),
+    path('movimientos/', include('movimientos.urls')),
 
-
-    
     path("cotizacion/", nada, name="cotizacion"),
-
-
 ]
 

@@ -23,12 +23,15 @@ from negocios.utils import get_negocio_activo
 from inventario.models import Producto, Lote   
 from django.db.models import Q, F, Sum, Count
 
+from usuarios.models import UsuarioNegocio
+
 
 @login_required
 def nueva_compra(request):
     negocio = get_negocio_activo(request)
-
     proveedores = Proveedor.objects.filter(negocio=negocio)
+    usuario = request.user
+
 
     return render(request, "inventario/nueva_compra.html", {
         "proveedores": proveedores
@@ -62,6 +65,8 @@ def guardar_compra(request):
         messages.error(request, "No hay negocio activo")
         return redirect("login")
 
+    usuario = request.user
+
     proveedor_id = request.POST.get("proveedor")
     data_json = request.POST.get("data_compra")
 
@@ -78,7 +83,8 @@ def guardar_compra(request):
 
     compra = Compra.objects.create(
         negocio=negocio,
-        proveedor=proveedor
+        proveedor=proveedor,
+        usuario=UsuarioNegocio.objects.filter(usuario=usuario, negocio=negocio).first()
     )
 
     total = Decimal("0.00")

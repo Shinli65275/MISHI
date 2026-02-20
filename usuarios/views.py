@@ -21,10 +21,18 @@ def registro(request):
     if request.method == "POST":
         # Datos del usuario
         username = request.POST.get("username")
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "El nombre de usuario ya está en uso")
+            return redirect("registro")
+
         password = request.POST.get("password")
 
         # Datos del negocio
         nombre_negocio = request.POST.get("nombre_negocio")
+        if Negocio.objects.filter(nombre=nombre_negocio).exists():
+            messages.error(request, "El nombre del negocio ya está en uso")
+            return redirect("registro")
         direccion = request.POST.get("direccion")
         telefono = request.POST.get("telefono")
 

@@ -843,6 +843,16 @@
             </li>
             {% endif %}
 
+            <!-- Movimientos - ADMIN -->
+            {% if rol_usuario == 'ADMIN' or rol_usuario == 'ALMACEN_ADMIN' %}
+            <li>
+                <a href="{% url 'movimientos_usuarios' %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span class="menu-text">Movimientos</span>
+                </a>
+            </li>
+            {% endif %}
+
             <!-- Cotización - Solo ALMACEN-ADMIN -->
             {% if rol_usuario == 'ALMACEN_ADMIN' %}
             <li>
