@@ -1,21 +1,11 @@
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from negocios.models import Negocio
 from negocios.utils import get_negocio_activo, get_rol_usuario
 from .models import UsuarioNegocio
-from django.contrib.auth import update_session_auth_hash
-
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
-
-from negocios.utils import get_negocio_activo
-from .models import UsuarioNegocio
-
 
 def registro(request):
     if request.method == "POST":
@@ -38,20 +28,18 @@ def registro(request):
 
         #Verificar si es distribuidor
         distribuidor = request.POST.get("es_distribuidor")
-        # Crear usuario
+
         user = User.objects.create_user(
             username=username,
             password=password
         )
 
-        # Crear negocio con todos los datos
         negocio = Negocio.objects.create(
             nombre=nombre_negocio,
             direccion=direccion,
             telefono=telefono
         )
 
-        # Asignar como ADMIN
         UsuarioNegocio.objects.create(
             usuario=user,
             negocio=negocio,
@@ -166,7 +154,6 @@ def lista_empleados(request):
         messages.error(request, "No hay un negocio activo seleccionado")
         return redirect('seleccionar_negocio')  # Ajusta según tu URL
     
-    # Obtener todos los usuarios del negocio
     usuarios = UsuarioNegocio.objects.filter(
         negocio_id=negocio_id,
         activo=True
@@ -182,7 +169,6 @@ def eliminar_empleado(request, usuario_negocio_id):
     negocio_id = request.session.get("negocio_id")
 
     
-    # Verificar que el usuario que intenta eliminar es administrador
     rol = get_rol_usuario(request)
     if rol != 'ADMIN' and rol != 'ALMACEN_ADMIN':
         messages.error(request, "No tienes permisos para realizar esta acción")
@@ -190,14 +176,12 @@ def eliminar_empleado(request, usuario_negocio_id):
     
     if request.method == 'POST':
         try:
-            # Obtener la relación usuario-negocio
             usuario_negocio = get_object_or_404(
                 UsuarioNegocio,
                 id=usuario_negocio_id,
                 negocio_id=negocio_id
             )
             
-            # Prevenir que el usuario se elimine a sí mismo
             if usuario_negocio.usuario == request.user:
                 messages.error(request, "No puedes eliminarte a ti mismo")
                 return redirect('lista_empleados')
@@ -219,7 +203,6 @@ def editar_empleado(request, usuario_negocio_id):
     negocio_id = request.session.get('negocio_id')
     
 
-    # Verificar que el usuario que intenta editar es administrador
     rol = get_rol_usuario(request)
     if rol != 'ADMIN' and rol != 'ALMACEN_ADMIN':
         messages.error(request, "No tienes permisos para realizar esta acción")
@@ -239,11 +222,9 @@ def editar_empleado(request, usuario_negocio_id):
         password = request.POST.get('password', '').strip()
         
         try:
-            # Actualizar información del usuario
             usuario = usuario_negocio.usuario
             usuario.email = email
             
-            # Cambiar contraseña solo si se proporcionó una nueva
             if password:
                 if len(password) < 8:
                     messages.error(request, "La contraseña debe tener al menos 8 caracteres")
@@ -254,7 +235,6 @@ def editar_empleado(request, usuario_negocio_id):
             if usuario == request.user and password:
                 update_session_auth_hash(request, usuario)
 
-            # Actualizar rol
             usuario_negocio.rol = rol_nuevo
             usuario_negocio.save()
             

@@ -566,6 +566,25 @@
 
     .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
 
+    .btn-print-direct {
+    padding: 10px 22px;
+    background: white;
+    color: #2c3e50;
+    border: 2px solid #2c3e50;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    }
+    .btn-print-direct:hover {
+        background: #2c3e50;
+        color: white;
+    }
+
     .btn-nueva-venta {
         padding: 10px 18px;
         background: white;
@@ -621,9 +640,14 @@
     </div>
 
     
-    <button class="btn-reimprimir" id="btnReimprimir" onclick="reabrirUltimoTicket()" disabled title="Reimprimir último ticket">
-        <i class="bi bi-printer"></i> Último ticket
-    </button>
+    <div style="display:flex; gap:10px; margin-bottom: 0;">
+        <button class="btn-reimprimir" id="btnReimprimir" onclick="reabrirUltimoTicket()" disabled title="Reimprimir último ticket">
+            <i class="bi bi-printer"></i> Último ticket
+        </button>
+        <button class="btn-reimprimir" id="btnImprimirDirectoHeader" onclick="imprimirDirectoDesdeHeader()" disabled title="Impresión directa del último ticket en impresora térmica">
+            <i class="bi bi-usb-symbol"></i> Imp. Directa
+        </button>
+    </div>
     <div class="venta-layout">
 
         <div>
@@ -750,6 +774,9 @@
         <div class="ticket-modal-footer">
             <button class="btn-nueva-venta" onclick="nuevaVenta()">
                 <i class="bi bi-plus-circle"></i> Nueva Venta
+            </button>
+            <button class="btn-print-direct" onclick="imprimirDirecto()" title="Imprimir directo en impresora térmica">
+                <i class="bi bi-printer"></i> Impresión Directa
             </button>
             <button class="btn-print" onclick="window.print()">
                 <i class="bi bi-printer-fill"></i> Imprimir
@@ -1106,5 +1133,87 @@ function cerrarTicket() {
     document.getElementById('ticketOverlay').classList.remove('open');
     document.body.style.overflow = '';
 }
+/* ════════════════════════════════
+   IMPRESIÓN DIRECTA ESC/POS
+════════════════════════════════ */
+function construirTicketEscPos(ticket) {
+    const ESC = '\x1b';
+    const GS  = '\x1d';
+
+    let t = '';
+    t += ESC + '@';
+    t += ESC + 'a' + '\x01';
+    t += 'MISHI\n';
+    t += 'Punto de Venta\n\n';
+
+    t += ESC + 'a' + '\x00';
+    t += `Folio : #${ticket.folio}\n`;
+    t += `Fecha : ${ticket.fecha}\n`;
+    t += '-'.repeat(32) + '\n';
+    t += `${'PRODUCTO'.padEnd(16)}CANT  SUBTOTAL\n`;
+    t += '-'.repeat(32) + '\n';
+
+    document.querySelectorAll('#tItems .ticket-item-row').forEach(row => {
+        const cols = row.querySelectorAll('span');
+        if (cols.length >= 4) {
+            const nombre   = cols[0].textContent.trim().substring(0, 14).padEnd(14);
+            const cantidad = cols[1].textContent.trim().padStart(3);
+            const subtotal = cols[3].textContent.trim().padStart(9);
+            t += `${nombre} ${cantidad} ${subtotal}\n`;
+        }
+    });
+
+    t += '-'.repeat(32) + '\n';
+    t += ESC + 'E' + '\x01';
+    t += `TOTAL: ${('$' + ticket.total.toFixed(2)).padStart(25)}\n`;
+    t += ESC + 'E' + '\x00';
+    t += `\nArticulos: ${ticket.totalItems}\n`;
+    t += '\nGracias por su compra\n\n\n';
+    t += GS + 'V' + '\x00';
+
+    return t;
+}
+
+function imprimirDirecto() {
+    if (!ultimoTicket) { mostrarAlerta('No hay ticket para imprimir'); return; }
+    enviarAImpresora(ultimoTicket);
+}
+
+function imprimirDirectoDesdeHeader() {
+    if (!ultimoTicket) { mostrarAlerta('No hay ticket para imprimir'); return; }
+    enviarAImpresora(ultimoTicket);
+}
+
+function enviarAImpresora(ticket) {
+    if (typeof qz === 'undefined') {
+        mostrarAlerta('QZ Tray no disponible');
+        return;
+    }
+
+    const rawData = construirTicketEscPos(ticket);
+    const config  = qz.configs.create('TECH_CLA58');
+
+    const imprimir = () => qz.print(config, [rawData])
+        .catch(err => {
+            mostrarAlerta('Error al enviar a impresora');
+            console.error(err);
+        });
+
+    if (qz.websocket.isActive()) {
+        imprimir();
+    } else {
+        qz.websocket.connect()
+            .then(imprimir)
+            .catch(() => mostrarAlerta('No se pudo conectar a QZ Tray'));
+    }
+}
+
+// Habilitar botón del header al renderizar ticket
+const _origRenderTicket = renderTicket;
+renderTicket = function(data) {
+    _origRenderTicket(data);
+    const btn = document.getElementById('btnImprimirDirectoHeader');
+    if (btn) btn.disabled = false;
+};
 </script>
 {% endblock %}

@@ -1,26 +1,23 @@
-from django.contrib.auth import logout
-from django.contrib.auth.views import LoginView
-from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from django.db.models import Sum, Count
 import json
 from datetime import timedelta
 from calendar import monthrange
-
-from negocios.utils import get_negocio_activo, get_rol_usuario
+from django.shortcuts import render, redirect
+from django.contrib.auth import logout
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.db.models import Sum
+from negocios.utils import get_negocio_activo
 from usuarios.models import UsuarioNegocio
 from ventas.models import Ingreso, Venta
-from inventario.models import Egreso
-from inventario.models import Producto
-
+from inventario.models import Egreso, Producto
 
 def nada(request):
     return render(request, "cotizacion.html", {})
 
 def logout_view(request):
     logout(request)
-    return redirect('login') # Cambia 'login' por tu ruta de inicio
+    return redirect('login')
 
 class CustomLoginView(LoginView):
     template_name = "registration/login.html"
@@ -56,7 +53,6 @@ def inicio(request):
     inicio_ayer = inicio_hoy - timedelta(days=1)
     fin_ayer    = fin_hoy    - timedelta(days=1)
 
-    # ── KPI: ventas hoy ──
     ventas_hoy = Ingreso.objects.filter(
         negocio=negocio, fecha__range=(inicio_hoy, fin_hoy)
     ).aggregate(t=Sum("monto"))["t"] or 0
@@ -69,23 +65,16 @@ def inicio(request):
     if ventas_ayer:
         delta_ventas = round(((float(ventas_hoy) - float(ventas_ayer)) / float(ventas_ayer)) * 100, 1)
 
-    # ── KPI: órdenes hoy ──
-    ordenes_hoy = Venta.objects.filter(
-        negocio=negocio, fecha__range=(inicio_hoy, fin_hoy)
-    ).count()
 
-    # ── KPI: egresos hoy ──
     egresos_hoy = Egreso.objects.filter(
         negocio=negocio, fecha__range=(inicio_hoy, fin_hoy)
     ).aggregate(t=Sum("monto"))["t"] or 0
 
-    # ── KPI: productos / stock bajo ──
     total_productos    = Producto.objects.filter(negocio=negocio).count()
     productos_bajo_stock = Producto.objects.filter(
         negocio=negocio, stock__lte=5   # ajusta el umbral según tu modelo
     ).count()
 
-    # ── Actividad reciente (últimos 10 movimientos: ingresos + egresos) ──
     ingresos_rec = list(
         Ingreso.objects.filter(negocio=negocio)
         .order_by("-fecha")[:10]
@@ -111,7 +100,6 @@ def inicio(request):
         reverse=True
     )[:10]
 
-    # ── Mini gráfica: ingresos últimos 7 días ──
     labels_7d = []
     data_7d   = []
     for i in range(6, -1, -1):
@@ -124,8 +112,7 @@ def inicio(request):
         labels_7d.append(dia.strftime("%d %b").lstrip("0"))   # ej. "18 Feb"
         data_7d.append(float(total))
 
-    # ── Stock bajo (top 5) ──
-    MAX_STOCK_REF = 50   # referencia para calcular el % de la barra
+    MAX_STOCK_REF = 50  
     productos_stock = Producto.objects.filter(
         negocio=negocio, stock__lte=20
     ).order_by("stock")[:5]
@@ -139,7 +126,6 @@ def inicio(request):
         for p in productos_stock
     ]
 
-    # ── Resumen del mes ──
     primer_mes = hoy.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     ultimo_mes = hoy.replace(
         day=monthrange(hoy.year, hoy.month)[1],
@@ -157,26 +143,20 @@ def inicio(request):
     balance_mes = float(ingresos_mes) - float(egresos_mes)
 
     context = {
-        # KPIs
         "ventas_hoy":          ventas_hoy,
         "delta_ventas":        delta_ventas,
-        "ordenes_hoy":         ordenes_hoy,
         "egresos_hoy":         egresos_hoy,
         "total_productos":     total_productos,
         "productos_bajo_stock": productos_bajo_stock,
         "fecha_hoy":           hoy.strftime("%d/%m/%Y"),
 
-        # Actividad
         "actividad_reciente":  actividad_reciente,
 
-        # Mini chart
         "labels_7d_json":      json.dumps(labels_7d),
         "data_7d_json":        json.dumps(data_7d),
 
-        # Stock
         "stock_bajo":          stock_bajo,
 
-        # Resumen mes
         "ingresos_mes":        ingresos_mes,
         "egresos_mes":         egresos_mes,
         "balance_mes":         balance_mes,

@@ -29,7 +29,7 @@
     /* ── KPIs ── */
     .kpi-row {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 16px;
         margin-bottom: 22px;
     }
@@ -469,6 +469,13 @@
             <div class="kpi-info">
                 <div class="kpi-label">Agotados</div>
                 <div class="kpi-val">{{ agotados }}</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-ico purple"><i class="bi bi-cash-coin"></i></div>
+            <div class="kpi-info">
+                <div class="kpi-label">Valor inventario</div>
+                <div class="kpi-val">${{ valor_inventario|floatformat:0 }}</div>
             </div>
         </div>
     </div>

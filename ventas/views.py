@@ -1,22 +1,19 @@
-from datetime import date, datetime
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
-from inventario.models import Lote, Producto
-from django.contrib.auth.decorators import login_required
-from negocios.utils import get_negocio_activo
-from usuarios.models import UsuarioNegocio
-from ventas.models import DetalleVenta, Venta, Ingreso
-from django.db import transaction
 import json
-from django.http import HttpResponse
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.lib import pagesizes
 from io import BytesIO
-from django.core.paginator import Paginator
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Sum, Q
 from django.utils import timezone
+from django.core.paginator import Paginator
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors, pagesizes
+from negocios.utils import get_negocio_activo
+from usuarios.models import UsuarioNegocio
+from inventario.models import Lote, Producto
+from ventas.models import DetalleVenta, Venta, Ingreso
 
 def buscar_producto_codigo(request):
 
@@ -77,26 +74,24 @@ def guardar_venta(request):
             if productos is None:
                 return JsonResponse({"error": "Payload inválido"}, status=400)
 
-            venta            = Venta.objects.create(negocio=negocio, total=0,usuario=UsuarioNegocio.objects.filter(usuario=usuario, negocio=negocio).first())
-            total            = 0
-            total_productos  = 0
+            venta           = Venta.objects.create(negocio=negocio, total=0, usuario=UsuarioNegocio.objects.filter(usuario=usuario, negocio=negocio).first())
+            total           = 0
+            total_productos = 0
 
             for item in productos:
-                producto  = Producto.objects.select_for_update().get(id=item["id"], negocio=negocio)
-                cantidad  = int(item["cantidad"])
-                precio    = float(item["precio"])
+                producto = Producto.objects.select_for_update().get(id=item["id"], negocio=negocio)
+                cantidad = int(item["cantidad"])
+                precio   = float(item["precio"])
 
-                # ── Verificar stock global antes de operar ──
                 if producto.stock < cantidad:
                     raise ValueError(f"Stock insuficiente de '{producto.nombre}'. "
                                      f"Disponible: {producto.stock}, solicitado: {cantidad}.")
 
-                # ── Descontar lotes FIFO (más antiguo primero) ──
                 lotes = (
                     Lote.objects
                     .select_for_update()
                     .filter(producto=producto, negocio=negocio, cantidad__gt=0)
-                    .order_by("fecha_creacion")   # ← FIFO
+                    .order_by("fecha_creacion")
                 )
 
                 restante = cantidad
@@ -105,21 +100,18 @@ def guardar_venta(request):
                         break
 
                     if lote.cantidad <= restante:
-                        # Este lote se agota por completo
-                        restante       -= lote.cantidad
-                        lote.cantidad   = 0
+                        restante      -= lote.cantidad
+                        lote.cantidad  = 0
                     else:
-                        # Este lote cubre el resto
-                        lote.cantidad  -= restante
-                        restante        = 0
+                        lote.cantidad -= restante
+                        restante       = 0
 
-                    lote.save(update_fields=["cantidad"])
+                    lote.precio_lote = lote.cantidad * lote.precio_compra  # ← nuevo
+                    lote.save(update_fields=["cantidad", "precio_lote"])   # ← nuevo
 
                 if restante > 0:
-                    # Nunca debería llegar aquí si stock global está bien
                     raise ValueError(f"No se pudo descontar el stock completo de '{producto.nombre}'.")
 
-                # ── Actualizar stock global del producto ──
                 producto.stock -= cantidad
                 producto.save(update_fields=["stock"])
 
@@ -135,15 +127,16 @@ def guardar_venta(request):
                 total           += subtotal
                 total_productos += cantidad
 
-            venta.total            = total
-            venta.total_productos  = total_productos
+            venta.total           = total
+            venta.total_productos = total_productos
             venta.save()
 
             Ingreso.objects.create(
                 negocio=negocio,
                 concepto=f"Venta #{venta.id}",
                 monto=total,
-                referencia=f"#{negocio.id:02d}-{venta.id:04d}"
+                referencia=f"#{negocio.id:02d}-{venta.id:04d}",
+                venta=venta
             )
 
             return JsonResponse({"success": True, "venta_id": venta.id})
@@ -236,7 +229,12 @@ def generar_pdf_venta(request, venta_id):
 @login_required
 def lista_ingresos(request):
     negocio = get_negocio_activo(request)
-    ingresos_qs = Ingreso.objects.filter(negocio=negocio).order_by("-fecha")
+    ingresos_qs = (
+    Ingreso.objects
+    .filter(negocio=negocio)
+    .select_related('venta')
+    .order_by("-fecha")
+    )
 
     # Filtros
     q = request.GET.get("q", "").strip().upper()
@@ -269,4 +267,29 @@ def lista_ingresos(request):
         "total_general": total_general,
         "total_hoy": total_hoy,
         "total_registros": total_registros,
+    })
+
+@login_required
+def detalle_ingreso_json(request, ingreso_id):
+    negocio = get_negocio_activo(request)
+    ingreso = get_object_or_404(Ingreso, id=ingreso_id, negocio=negocio)
+
+    items = []
+    if ingreso.venta:
+        for d in ingreso.venta.detalles.select_related('producto').all():  # ← detalles
+            items.append({
+                "nombre":   d.producto.nombre,
+                "cantidad": d.cantidad,
+                "precio":   float(d.precio_unitario),
+                "subtotal": float(d.subtotal),
+            })
+
+    return JsonResponse({
+        "id":         ingreso.id,
+        "concepto":   ingreso.concepto,
+        "referencia": ingreso.referencia or "",
+        "monto":      float(ingreso.monto),
+        "fecha":      ingreso.fecha.strftime("%d/%m/%Y"),
+        "hora":       ingreso.fecha.strftime("%H:%M"),
+        "items":      items,
     })

@@ -66,7 +66,9 @@ class Lote(models.Model):
     cantidad = models.PositiveIntegerField()
     precio_compra = models.DecimalField(max_digits=10, decimal_places=2)
 
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+    precio_lote = models.DecimalField(max_digits=12, decimal_places=2, blank=True)
 
     class Meta:
         unique_together = ('lote', 'producto', 'negocio')
@@ -74,12 +76,17 @@ class Lote(models.Model):
     def __str__(self):
         return self.lote
     
+    def calcular_precio_lote(self):
+        self.precio_lote = self.cantidad * self.precio_compra
+        return self.precio_lote
 
     def save(self, *args, **kwargs):
+        self.precio_lote = self.cantidad * self.precio_compra
         letras_producto = self.producto.nombre[:1].upper()
         producto_id = str(self.producto.id).zfill(4)
         negocio_id = str(self.negocio.id).zfill(2)
-        hoy = timezone.now().strftime("%y%m%d")
+        fecha_base = self.fecha_creacion or timezone.now()
+        hoy = fecha_base.strftime("%y%m%d")
 
         codigo_generado = f"{letras_producto}{producto_id}N{negocio_id}{hoy}"
 

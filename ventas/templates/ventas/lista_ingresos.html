@@ -686,14 +686,7 @@
                         </td>
 
                         <td class="col-accion">
-                            <button class="btn-detalle" onclick="verTicket(
-                                '{{ ingreso.id }}',
-                                '{{ ingreso.concepto|escapejs }}',
-                                '{{ ingreso.referencia|default:""|escapejs }}',
-                                '{{ ingreso.monto|floatformat:2 }}',
-                                '{{ ingreso.fecha|date:"d/m/Y" }}',
-                                '{{ ingreso.fecha|date:"H:i" }}'
-                            )">
+                            <button class="btn-detalle" onclick="verTicket({{ ingreso.id }})">
                                 <i class="bi bi-receipt"></i> Ticket
                             </button>
                         </td>
@@ -791,6 +784,7 @@
 </div>
 
 <script>
+// Reloj
 function actualizarReloj() {
     const now = new Date();
     document.getElementById('horaActual').textContent =
@@ -800,32 +794,57 @@ function actualizarReloj() {
 actualizarReloj();
 setInterval(actualizarReloj, 60000);
 
-function verTicket(id, concepto, referencia, monto, fecha, hora) {
-    document.getElementById('tFolio').textContent    = '#' + id;
-    document.getElementById('tFecha').textContent    = fecha;
-    document.getElementById('tHora').textContent     = hora;
-    document.getElementById('tTotal').textContent    = '$' + parseFloat(monto).toFixed(2);
-    document.getElementById('tFechaFooter').textContent = fecha + ' ' + hora;
-
-    document.getElementById('tItems').innerHTML = `
-        <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
-            <span class="item-name">${concepto}</span>
-            <span style="text-align:right; font-weight:700;">$${parseFloat(monto).toFixed(2)}</span>
-        </div>`;
-
-    const refWrap    = document.getElementById('tRefWrap');
-    const refDivider = document.getElementById('tRefDivider');
-    if (referencia) {
-        document.getElementById('tRef').textContent = referencia;
-        refWrap.style.display    = 'flex';
-        refDivider.style.display = 'block';
-    } else {
-        refWrap.style.display    = 'none';
-        refDivider.style.display = 'none';
-    }
-
+async function verTicket(ingresoId) {
+    // Mostrar modal con loading
     document.getElementById('ticketOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    document.getElementById('tItems').innerHTML =
+        '<div style="text-align:center; padding:14px; color:#adb5bd; font-size:0.85rem;">Cargando...</div>';
+
+    try {
+        const res = await fetch(`/ventas/ingresos/detalle/${ingresoId}/json/`);
+        const data = await res.json();
+
+        document.getElementById('tFolio').textContent     = '#' + data.id;
+        document.getElementById('tFecha').textContent     = data.fecha;
+        document.getElementById('tHora').textContent      = data.hora;
+        document.getElementById('tTotal').textContent     = '$' + data.monto.toFixed(2);
+        document.getElementById('tFechaFooter').textContent = data.fecha + ' ' + data.hora;
+
+        // ── Ítems ──
+        if (data.items && data.items.length > 0) {
+            document.getElementById('tItems').innerHTML = data.items.map(item => `
+                <div class="ticket-item-row">
+                    <span class="item-name">${item.nombre}</span>
+                    <span style="text-align:right;">${item.cantidad}</span>
+                    <span style="text-align:right; font-weight:700;">$${item.subtotal.toFixed(2)}</span>
+                </div>
+            `).join('');
+        } else {
+            // Ingreso sin venta vinculada (registros viejos)
+            document.getElementById('tItems').innerHTML = `
+                <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
+                    <span class="item-name">${data.concepto}</span>
+                    <span style="text-align:right; font-weight:700;">$${data.monto.toFixed(2)}</span>
+                </div>`;
+        }
+
+        // ── Referencia ──
+        const refWrap    = document.getElementById('tRefWrap');
+        const refDivider = document.getElementById('tRefDivider');
+        if (data.referencia) {
+            document.getElementById('tRef').textContent = data.referencia;
+            refWrap.style.display    = 'flex';
+            refDivider.style.display = 'block';
+        } else {
+            refWrap.style.display    = 'none';
+            refDivider.style.display = 'none';
+        }
+
+    } catch (e) {
+        document.getElementById('tItems').innerHTML =
+            '<div style="text-align:center; color:red; font-size:0.8rem;">Error al cargar los detalles.</div>';
+    }
 }
 
 function cerrarTicket() {

@@ -3,11 +3,13 @@ from inventario.models import Producto
 from negocios.models import Negocio 
 from django.db import transaction
 from usuarios.models import UsuarioNegocio
+from django.utils import timezone
 
 class Venta(models.Model): # negocio,fecha,total,total_productos,usuario
 
     negocio = models.ForeignKey(Negocio, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
+    
+    fecha = models.DateTimeField(default=timezone.now)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     total_productos = models.IntegerField(default=0)
     usuario = models.ForeignKey(UsuarioNegocio, on_delete=models.DO_NOTHING, default=None)   
@@ -60,8 +62,10 @@ class DetalleVenta(models.Model):
 
 
 class Ingreso(models.Model):
-    negocio = models.ForeignKey(Negocio, on_delete=models.CASCADE)
-    concepto = models.CharField(max_length=200)
-    monto = models.DecimalField(max_digits=10, decimal_places=2)
-    fecha = models.DateTimeField(auto_now_add=True)
+    negocio    = models.ForeignKey(Negocio, on_delete=models.CASCADE)
+    concepto   = models.CharField(max_length=255)
+    monto      = models.DecimalField(max_digits=10, decimal_places=2)
     referencia = models.CharField(max_length=100, blank=True, null=True)
+    fecha      = models.DateTimeField(default=timezone.now)  # ← cambia auto_now_add por default
+    venta      = models.ForeignKey('Venta', on_delete=models.SET_NULL,  # ← nuevo
+                                   null=True, blank=True, related_name='ingresos')

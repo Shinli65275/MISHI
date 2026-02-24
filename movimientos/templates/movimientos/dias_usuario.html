@@ -168,12 +168,6 @@
 {% block content %}
 <div class="container-fluid">
 
-    <div class="breadcrumb-custom">
-        <a href="{% url 'movimientos_usuarios' %}"><i class="bi bi-arrow-left-right"></i> Movimientos</a>
-        <i class="bi bi-chevron-right"></i>
-        <span>{{ usuario.usuario.get_full_name|default:usuario.usuario.username }}</span>
-    </div>
-
     <div class="page-header">
         <h2><i class="bi bi-calendar3"></i> Actividad por día</h2>
     </div>

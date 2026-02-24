@@ -1,13 +1,14 @@
-# movimientos/views.py
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
+from django.contrib.auth.decorators import login_required
 from ventas.models import Venta
 from inventario.models import Compra
 from usuarios.models import UsuarioNegocio
 from datetime import datetime
 
 
+@login_required
 def lista_usuarios(request):
     import unicodedata
 
@@ -48,7 +49,7 @@ def lista_usuarios(request):
         'q': q,
     })
 
-
+@login_required
 def dias_usuario(request, usuario_id):
     negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio
     usuario = get_object_or_404(UsuarioNegocio, id=usuario_id, negocio=negocio)
@@ -100,7 +101,7 @@ def dias_usuario(request, usuario_id):
         'fecha_filtro':        fecha_filtro,
     })
 
-
+@login_required
 def movimientos_dia(request, usuario_id, fecha):
     """Muestra todos los movimientos (ventas y compras) de un usuario en un día específico."""
     negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio

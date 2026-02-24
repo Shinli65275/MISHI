@@ -9,4 +9,5 @@ urlpatterns = [
     path("buscar-producto/", views.buscar_producto_codigo, name="buscar_producto_codigo"),
     path("<int:venta_id>/pdf/", views.generar_pdf_venta, name="pdf_venta"),
     path("lista_ingresos/", views.lista_ingresos, name="lista_ingresos"),
+    path("ingresos/detalle/<int:ingreso_id>/json/", views.detalle_ingreso_json, name="detalle_ingreso_json"),
 ]

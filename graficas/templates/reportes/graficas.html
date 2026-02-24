@@ -309,7 +309,7 @@
 
     /* overide inline grid for top-report row on mobile */
     @media (max-width: 768px) {
-        .reporte-grid-2col { grid-template-columns: 1fr !important; }
+            .mini-reporte-top { grid-template-columns: 1fr !important; }
     }
 
     /* ── Tablet ── */
@@ -534,7 +534,7 @@
                 Mini reporte — {{ nombre_mes }} {{ anio_actual }}
             </div>
 
-            <div class="mini-reporte-top" style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+            <div class="mini-reporte-top" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px; margin-bottom:18px;">
                 <div style="background:#f0f2ff; border-radius:11px; padding:16px 18px;">
                     <div style="font-size:0.75rem; color:#667eea; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
                         <i class="bi bi-arrow-down-circle-fill"></i> Total Ingresos
@@ -555,6 +555,20 @@
                     <div style="font-size:1.5rem; font-weight:800; color:#2c3e50;">${{ total_egresos_mes|floatformat:2 }}</div>
                     <div style="font-size:0.72rem; color:#adb5bd; margin-top:3px;">Gastos del mes</div>
                 </div>
+                <div style="background:#e8fff3; border-radius:11px; padding:16px 18px;">
+                    <div style="font-size:0.75rem; color:#2e7d32; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                        <i class="bi bi-boxes"></i> Valor Inventario Compra
+                    </div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2c3e50;">${{ total_inventario|floatformat:2 }}</div>
+                    <div style="font-size:0.72rem; color:#adb5bd; margin-top:3px;">Stock actual valorizado</div>
+                </div>
+                <div style="background:#e8fff3; border-radius:11px; padding:16px 18px;">
+                    <div style="font-size:0.75rem; color:#2e7d32; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">
+                        <i class="bi bi-boxes"></i> Valor Inventario Venta
+                    </div>
+                    <div style="font-size:1.5rem; font-weight:800; color:#2c3e50;">${{ total_venta|floatformat:2 }}</div>
+                    <div style="font-size:0.72rem; color:#adb5bd; margin-top:3px;">Stock actual valorizado</div>
+                </div>
             </div>
 
             <div class="mini-reporte-bottom" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
@@ -571,6 +585,7 @@
                     <div style="font-size:1.3rem; font-weight:800; color:{% if balance_mes >= 0 %}#2e7d32{% else %}#c62828{% endif %};">${{ balance_mes|floatformat:0 }}</div>
                 </div>
             </div>
+            
         </div>
 
         <!-- Balance visual con barras -->

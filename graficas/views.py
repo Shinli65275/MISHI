@@ -1,15 +1,15 @@
+import json
+from calendar import monthrange
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db.models import Sum
-from django.db.models.functions import TruncDay, TruncMonth
-import json
-from datetime import timedelta
-from calendar import monthrange
-
+from django.db.models.functions import TruncDay
 from negocios.utils import get_negocio_activo
 from ventas.models import Ingreso, Venta
-from inventario.models import Egreso  
+from inventario.models import Egreso, Lote
+from productos.models import Producto
 
 
 @login_required
@@ -24,7 +24,6 @@ def graficas(request):
     MESES_CORTO = ["Ene","Feb","Mar","Abr","May","Jun",
                    "Jul","Ago","Sep","Oct","Nov","Dic"]
 
-    # ── Periodo seleccionado ──
     try:
         anio = int(request.GET.get("anio", hoy.year))
         mes  = int(request.GET.get("mes",  hoy.month))
@@ -42,9 +41,6 @@ def graficas(request):
     dias_mes = monthrange(anio, mes)[1]
     labels   = [str(d) for d in range(1, dias_mes + 1)]
 
-    # ─────────────────────────────────────────
-    # INGRESOS día a día  (campo: fecha)
-    # ─────────────────────────────────────────
     ingresos_por_dia = (
         Ingreso.objects
         .filter(negocio=negocio, fecha__range=(primer_dia, ultimo_dia))
@@ -56,9 +52,6 @@ def graficas(request):
     ing_map       = {e["dia"].day: float(e["total"]) for e in ingresos_por_dia}
     data_ingresos = [ing_map.get(d, 0) for d in range(1, dias_mes + 1)]
 
-    # ─────────────────────────────────────────
-    # EGRESOS día a día  (campo: fecha)
-    # ─────────────────────────────────────────
     egresos_por_dia = (
         Egreso.objects
         .filter(negocio=negocio, fecha__range=(primer_dia, ultimo_dia))
@@ -70,9 +63,6 @@ def graficas(request):
     egr_map      = {e["dia"].day: float(e["total"]) for e in egresos_por_dia}
     data_egresos = [egr_map.get(d, 0) for d in range(1, dias_mes + 1)]
 
-    # ─────────────────────────────────────────
-    # TENDENCIA 6 MESES
-    # ─────────────────────────────────────────
     labels_6m   = []
     data_ing_6m = []
     data_egr_6m = []
@@ -102,9 +92,6 @@ def graficas(request):
         data_ing_6m.append(float(ing_mes))
         data_egr_6m.append(float(egr_mes))
 
-    # ─────────────────────────────────────────
-    # REPORTE DEL MES
-    # ─────────────────────────────────────────
     total_ingresos_mes = sum(data_ingresos)
     total_egresos_mes  = sum(data_egresos)
     balance_mes        = total_ingresos_mes - total_egresos_mes
@@ -116,7 +103,6 @@ def graficas(request):
 
     ticket_promedio = (total_ingresos_mes / num_ventas_mes) if num_ventas_mes else 0
 
-    # ── Variación ingresos vs mes anterior ──
     mes_ant  = mes - 1 if mes > 1 else 12
     anio_ant = anio    if mes > 1 else anio - 1
 
@@ -136,31 +122,21 @@ def graficas(request):
             ((total_ingresos_mes - float(ing_ant)) / float(ing_ant)) * 100, 1
         )
 
-    # ── Top 5 conceptos de ingreso ──
-    top_conceptos = list(
-        Ingreso.objects
-        .filter(negocio=negocio, fecha__range=(primer_dia, ultimo_dia))
-        .values("concepto")
-        .annotate(total=Sum("monto"))
-        .order_by("-total")[:5]
-    )
-
-    # ── Top 5 categorías de egreso ──
-    top_categorias = list(
-        Egreso.objects
-        .filter(negocio=negocio, fecha__range=(primer_dia, ultimo_dia))
-        .values("categoria")
-        .annotate(total=Sum("monto"))
-        .order_by("-total")[:5]
-    )
-
-    # ── Años disponibles ──
     primer_ingreso = (
         Ingreso.objects.filter(negocio=negocio).order_by("fecha").first()
     )
     anio_inicio       = primer_ingreso.fecha.year if primer_ingreso else hoy.year
     anios_disponibles = list(range(anio_inicio, hoy.year + 1))
+    
+    lotes= Lote.objects.filter(negocio=negocio)
+    valor_inventario = 0
+    for p in lotes:
+        valor_inventario += p.cantidad * p.precio_compra
 
+    precio_pro = Producto.objects.filter(negocio=negocio)
+    precio_venta = 0
+    for p in precio_pro:
+        precio_venta += p.stock * p.precio_venta
     context = {
         "mes_actual":          mes,
         "anio_actual":         anio,
@@ -180,8 +156,8 @@ def graficas(request):
         "num_ventas_mes":      num_ventas_mes,
         "ticket_promedio":     ticket_promedio,
         "variacion_ingresos":  variacion_ingresos,
-        "top_conceptos":       top_conceptos,
-        "top_categorias":      top_categorias,
+        "total_inventario":    valor_inventario,
+        "total_venta":        precio_venta,
     }
 
     return render(request, "reportes/graficas.html", context)

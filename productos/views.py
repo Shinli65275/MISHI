@@ -1,12 +1,10 @@
 from decimal import Decimal
-from django.contrib import messages
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-
+from django.contrib import messages
+from negocios.utils import get_negocio_activo, get_rol_usuario
 from proveedores.models import Proveedor
 from .models import Producto
-from negocios.utils import get_negocio_activo, get_rol_usuario
-
 
 @login_required
 def crear_producto(request):

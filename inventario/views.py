@@ -1,8 +1,14 @@
 import json
-from pyexpat.errors import messages
-from django.shortcuts import get_object_or_404, render, redirect
+from io import BytesIO
+from datetime import date, datetime, timedelta
+from decimal import Decimal
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Sum, Count, Q, F
+from django.utils import timezone
+from django.contrib import messages
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -10,19 +16,6 @@ from negocios.utils import get_negocio_activo
 from proveedores.models import Proveedor
 from productos.models import Producto
 from inventario.models import Compra, DetalleCompra, Egreso, EgresoFijo, Lote
-from io import BytesIO
-from datetime import date, datetime, timedelta
-from django.db import transaction
-from decimal import Decimal
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count
-from django.utils import timezone
-from django.contrib import messages
-from negocios.utils import get_negocio_activo
-from inventario.models import Producto, Lote   
-from django.db.models import Q, F, Sum, Count
-
 from usuarios.models import UsuarioNegocio
 
 
@@ -233,15 +226,12 @@ def lista_egresos(request):
 
     negocio = get_negocio_activo(request)
 
-    # ── Parámetros de filtro ────────────────────────────────────────────
     hoy = date.today()
 
-    # Si no se pasa fecha_desde, se usa el primer día del mes actual
     fecha_desde_str = request.GET.get("fecha_desde", hoy.strftime("%Y-%m-01"))
     fecha_hasta_str = request.GET.get("fecha_hasta", "")
     categoria_filtro = request.GET.get("categoria", "")
 
-    # Parsear fechas
     try:
         fecha_desde = datetime.strptime(fecha_desde_str, "%Y-%m-%d").date()
     except (ValueError, TypeError):
@@ -252,7 +242,6 @@ def lista_egresos(request):
     except (ValueError, TypeError):
         fecha_hasta = None
 
-    # ── Queryset base ───────────────────────────────────────────────────
     egresos = Egreso.objects.filter(
         negocio=negocio,
         fecha__gte=fecha_desde,
@@ -264,10 +253,8 @@ def lista_egresos(request):
     if categoria_filtro:
         egresos = egresos.filter(categoria=categoria_filtro)
 
-    # ── Totales ─────────────────────────────────────────────────────────
     total_egresos = sum(e.monto for e in egresos)
 
-    # ── Categorías únicas para el selector ─────────────────────────────
     categorias = (
         Egreso.objects.filter(negocio=negocio)
         .values_list("categoria", flat=True)
@@ -279,7 +266,6 @@ def lista_egresos(request):
         "egresos": egresos,
         "total_egresos": total_egresos,
         "categorias": categorias,
-        # Devolver los valores activos para pre-rellenar el form
         "fecha_desde": fecha_desde_str,
         "fecha_hasta": fecha_hasta_str,
         "categoria_filtro": categoria_filtro,
@@ -315,7 +301,6 @@ def lista_compras(request):
     negocio = get_negocio_activo(request)
     proveedores = Proveedor.objects.filter(negocio=negocio)
 
-    # ✅ Sin import local — Compra ya está importada al inicio del archivo
     nueva_compra_id = request.session.pop('nueva_compra_id', None)
     nueva_compra = None
     if nueva_compra_id:
@@ -354,7 +339,6 @@ def nuevo_egreso_fijo(request):
 
     negocio = get_negocio_activo(request)
 
-    # Categorías ya usadas en este negocio para los chips
     categorias_existentes = (
         EgresoFijo.objects.filter(negocio=negocio)
         .values_list("categoria", flat=True)
@@ -434,7 +418,6 @@ def inventario(request):
         valor_inventario=Sum("lotes__precio_compra")
     )
 
-    # ── KPIs ──
     todos           = Producto.objects.filter(negocio=negocio)
     total_productos = todos.count()
     total_stock     = todos.aggregate(t=Sum("stock"))["t"] or 0
@@ -443,6 +426,11 @@ def inventario(request):
         Q(stock_minimo__gt=0, stock__lte=F('stock_minimo')) |
         Q(stock_minimo=-1, stock__lte=10)
     ).count()
+    # valor total del inventario (sumatoria de stock * precio_compra)
+    lotes= Lote.objects.filter(negocio=negocio)
+    valor_inventario = 0
+    for p in lotes:
+        valor_inventario += p.cantidad * p.precio_compra
 
     lotes_recientes = (
         Lote.objects
@@ -461,6 +449,7 @@ def inventario(request):
         "total_stock":     total_stock,
         "bajo_stock":      bajo_stock,
         "agotados":        agotados,
+        "valor_inventario": valor_inventario,
     }
 
     return render(request, "inventario/inventario.html", context)
@@ -471,10 +460,12 @@ def detalle_producto(request, producto_id):
     """Vista de lotes de un producto específico."""
     negocio = get_negocio_activo(request)
     producto = get_object_or_404(Producto, id=producto_id, negocio=negocio)
+    print("Producto:", producto.nombre, "Stock:", producto.stock, "Precio Compra:", producto.precio_compra)
     lotes    = Lote.objects.filter(producto=producto, negocio=negocio).order_by("-fecha_creacion")
 
     context = {
         "producto": producto,
         "lotes":    lotes,
+        "Precio_lote": producto.precio_compra * producto.stock
     }
     return render(request, "inventario/detalle_producto.html", context)

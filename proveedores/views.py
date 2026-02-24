@@ -95,12 +95,10 @@ def editar_proveedor(request, proveedor_id):
 
 @login_required
 def eliminar_proveedor(request, proveedor_id):
-    # Faltaban comillas en la clave de la sesión
     negocio_id = request.session.get('negocio_id') 
 
     if request.method == 'POST':
         try:
-            # Filtramos por id y negocio_id para asegurar que pertenezca al negocio activo
             proveedor = get_object_or_404(Proveedor, id=proveedor_id, negocio_id=negocio_id)
             nombre = proveedor.nombre
             proveedor.delete()
@@ -108,4 +106,4 @@ def eliminar_proveedor(request, proveedor_id):
         except Exception as e:
             messages.error(request, f"Error al eliminar el proveedor: {str(e)}")
             
-    return redirect('lista_proveedores') # Siempre redirigir al finalizar
+    return redirect('lista_proveedores')
