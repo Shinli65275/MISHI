@@ -1187,17 +1187,19 @@ function imprimirDirectoDesdeHeader() {
 function imprimirAndroidRawBT(ticket) {
     const rawData = construirTicketEscPos(ticket);
 
-    // Convertir a Base64 correctamente
     const encoder = new TextEncoder();
     const bytes = encoder.encode(rawData);
 
     let binary = '';
-    bytes.forEach(b => binary += String.fromCharCode(b));
+    for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
 
     const base64 = btoa(binary);
 
-    // Enviar a RawBT
-    window.location.href = "rawbt://print?base64=" + encodeURIComponent(base64);
+    window.location.href =
+        "intent://print?base64=" + encodeURIComponent(base64) +
+        "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
 }
 
 function enviarAImpresora(ticket) {
