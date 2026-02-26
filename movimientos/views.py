@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
@@ -6,7 +7,7 @@ from ventas.models import Venta
 from inventario.models import Compra
 from usuarios.models import UsuarioNegocio
 from datetime import datetime
-
+from negocios.models import ticket
 
 @login_required
 def lista_usuarios(request):
@@ -48,6 +49,33 @@ def lista_usuarios(request):
         'total_compras': sum(u.num_compras for u in usuarios),
         'q': q,
     })
+
+@login_required
+def compra_detalle_json(request, compra_id):
+    negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio
+    compra  = get_object_or_404(Compra, id=compra_id, negocio=negocio)
+
+    detalles = []
+    for d in compra.detalles.all():
+        detalles.append({
+            'nombre':   d.producto.nombre,
+            'cantidad': d.cantidad,
+            'precio':   float(d.precio_compra),
+            'subtotal': float(d.subtotal),
+        })
+
+    data = {
+        'id':              compra.id,
+        'numero_factura':  compra.numero_factura,
+        'fecha':           compra.fecha.strftime('%d/%m/%Y'),
+        'hora':            compra.fecha.strftime('%H:%M'),
+        'proveedor':       compra.proveedor.nombre,
+        'total':           float(compra.total),
+        'total_productos': compra.total_productos,
+        'detalles':        detalles,
+    }
+
+    return JsonResponse(data)
 
 @login_required
 def dias_usuario(request, usuario_id):
@@ -146,6 +174,11 @@ def movimientos_dia(request, usuario_id, fecha):
 
     movimientos.sort(key=lambda x: x['fecha'], reverse=True)
 
+    try:
+        ticket_config = ticket.objects.get(negocio=negocio) 
+    except ticket.DoesNotExist:
+        ticket_config = None
+
     return render(request, 'movimientos/movimientos_dia.html', {
         'usuario': usuario,
         'fecha': fecha_dt,
@@ -153,4 +186,29 @@ def movimientos_dia(request, usuario_id, fecha):
         'num_ventas': ventas.count(),
         'num_compras': compras.count(),
         'total_ventas': sum(m['total'] for m in movimientos if m['tipo'] == 'Venta'),
+        'ticket_nombre':  ticket_config.nombre_negocio if ticket_config else 'MI NEGOCIO',
+        'ticket_mensaje': ticket_config.mensaje         if ticket_config else 'Gracias por su compra',
+        
+    })
+
+@login_required
+def venta_detalle_json(request, venta_id):
+    negocio = request.user.usuarionegocio_set.filter(activo=True).first().negocio
+    venta = get_object_or_404(Venta, id=venta_id, negocio=negocio)
+
+    items = []
+    for d in venta.detalles.select_related('producto').all():
+        items.append({
+            'nombre':   d.producto.nombre,
+            'cantidad': d.cantidad,
+            'precio':   float(d.precio_unitario),
+            'subtotal': float(d.subtotal),
+        })
+
+    return JsonResponse({
+        'id':    venta.id,
+        'fecha': venta.fecha.strftime('%d/%m/%Y'),
+        'hora':  venta.fecha.strftime('%H:%M'),
+        'monto': float(venta.total),
+        'items': items,
     })

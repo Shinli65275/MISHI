@@ -1036,7 +1036,7 @@
         <div id="ticketPrintArea">
             <div id="ticketPreview">
                 <div class="ticket-store-name">MISHI</div>
-                <div class="ticket-store-sub">Punto de Venta</div>
+                <div class="ticket-store-name">{{ ticket_nombre }}</div>
                 <hr class="ticket-divider solid">
                 <div class="ticket-info-row"><span>Folio</span><span id="tFolio">#—</span></div>
                 <div class="ticket-info-row"><span>Fecha</span><span id="tFecha">—</span></div>
@@ -1060,7 +1060,7 @@
                 <div class="ticket-footer-text">
                     Documento generado por MISHI<br>
                     <span id="tFechaFooter">—</span><br>
-                    — Gracias por su compra —
+                    {{ ticket_mensaje }}
                 </div>
             </div>
         </div>
@@ -1079,7 +1079,9 @@
 </div>
 
 <script>
-const PRODUCTOS = {{ productos_json|safe }};
+const PRODUCTOS       = {{ productos_json|safe }};
+const TICKET_NOMBRE   = "{{ ticket_nombre }}";
+const TICKET_MENSAJE  = "{{ ticket_mensaje }}";
 
 let carrito = [];
 let folioVenta = null;
@@ -1564,7 +1566,7 @@ function construirTicketEscPos(ticket) {
     // Centrar
     t += ESC + 'a' + '\x01';
     t += padEnd('MISHI', 32).trim() + LF;
-    t += 'Punto de Venta' + LF + LF;
+    t += padEnd(TICKET_NOMBRE, 32).trim() + LF;
 
     // Alinear izquierda
     t += ESC + 'a' + '\x00';
@@ -1574,7 +1576,7 @@ function construirTicketEscPos(ticket) {
 
     // Encabezado columnas
     const hNombre   = padEnd('PRODUCTO', COL_NOMBRE);
-    const hCant     = padStart('QTY', COL_CANT);
+    const hCant     = padStart('CAN.', COL_CANT);
     const hSubtotal = padStart('SUBTOTAL', COL_SUBTOTAL);
     t += `${hNombre} ${hCant} ${hSubtotal}` + LF;
     t += '-'.repeat(32) + LF;
@@ -1621,7 +1623,7 @@ function construirTicketEscPos(ticket) {
 
     // Centro para footer
     t += ESC + 'a' + '\x01';
-    t += 'Gracias por su compra' + LF;
+    t += normalizeEscPos(TICKET_MENSAJE) + LF;
     t += LF + LF + LF;
 
     // Corte

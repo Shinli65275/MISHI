@@ -17,8 +17,7 @@ from proveedores.models import Proveedor
 from productos.models import Producto
 from inventario.models import Compra, DetalleCompra, Egreso, EgresoFijo, Lote
 from usuarios.models import UsuarioNegocio
-
-
+from negocios.models import ticket
 @login_required
 def nueva_compra(request):
     negocio = get_negocio_activo(request)
@@ -194,9 +193,16 @@ def detalle_compra(request, compra_id):
 
     detalles = compra.detalles.all()
 
+    try:
+        ticket_config = ticket.objects.get(negocio=negocio) 
+    except ticket.DoesNotExist:
+        ticket_config = None
+
     return render(request, "inventario/detalle_compra.html", {
         "compra": compra,
-        "detalles": detalles
+        "detalles": detalles,
+        'ticket_nombre':  ticket_config.nombre_negocio if ticket_config else 'MI NEGOCIO',
+        'ticket_mensaje': ticket_config.mensaje         if ticket_config else 'Gracias por su compra',
     })
 
 @login_required

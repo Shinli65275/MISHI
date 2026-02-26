@@ -43,37 +43,55 @@
     .total-cell.compra { color: #0277bd; }
     .prods-cell { display: inline-flex; align-items: center; gap: 5px; background: #f0f2ff; color: #667eea; padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
 
-    /* Botón ticket */
     .btn-detalle { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 7px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .btn-detalle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
 
-    /* Modal ticket */
+    /* ── Alerta ── */
+    .stock-alerta {
+        display: none;
+        position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+        background: #fff3cd; border: 1.5px solid #ffc107; color: #856404;
+        padding: 12px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 600;
+        z-index: 3000; box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        align-items: center; gap: 10px; max-width: 90vw;
+        animation: slideDown 0.25s ease;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ── Modal ticket ── */
     .ticket-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1050; align-items: center; justify-content: center; padding: 16px; }
     .ticket-overlay.open { display: flex; }
-    .ticket-modal { background: white; border-radius: 16px; width: 380px; max-width: 100%; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 70px rgba(0,0,0,0.28); animation: slideModal 0.25s ease; }
+    .ticket-modal { background: white; border-radius: 16px; width: 100%; max-width: 380px; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 70px rgba(0,0,0,0.28); animation: slideModal 0.25s ease; }
     @keyframes slideModal { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .ticket-modal-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 18px 22px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
     .ticket-modal-header h6 { margin: 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .btn-close-modal { background: rgba(255,255,255,0.2); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; font-size: 1rem; }
     .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
-    #ticketPreview { padding: 26px 28px; font-family: 'Courier New', Courier, monospace; background: #fafafa; }
+
+    #ticketPreview { padding: 24px 26px; font-family: 'Courier New', Courier, monospace; background: #fafafa; }
     .ticket-store-name { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; color: #2c3e50; margin-bottom: 2px; }
-    .ticket-store-sub  { text-align: center; font-size: 0.72rem; color: #6c757d; margin-bottom: 16px; letter-spacing: 1px; }
-    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 12px 0; }
+    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 10px 0; }
     .ticket-divider.solid { border-top: 2px solid #2c3e50; }
-    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 5px; }
+    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 4px; }
     .ticket-info-row span:first-child { color: #6c757d; }
     .ticket-info-row span:last-child  { font-weight: 700; }
-    .ticket-items-header { display: grid; grid-template-columns: 1fr 42px 80px; gap: 4px; font-size: 0.68rem; font-weight: 700; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 0; border-bottom: 1px solid #dee2e6; }
-    .ticket-item-row { display: grid; grid-template-columns: 1fr 42px 80px; gap: 4px; font-size: 0.78rem; color: #495057; padding: 6px 0; border-bottom: 1px dotted #e9ecef; align-items: center; }
+    .ticket-items-header { display: grid; grid-template-columns: 1fr 34px 64px 64px; gap: 3px; font-size: 0.67rem; font-weight: 700; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 0; border-bottom: 1px solid #dee2e6; }
+    .ticket-item-row { display: grid; grid-template-columns: 1fr 34px 64px 64px; gap: 3px; font-size: 0.77rem; color: #495057; padding: 5px 0; border-bottom: 1px dotted #e9ecef; align-items: center; }
     .ticket-item-row .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+    .ticket-items-summary { display: flex; justify-content: space-between; font-size: 0.75rem; color: #6c757d; margin-top: 3px; }
     .ticket-footer-text { text-align: center; font-size: 0.7rem; color: #adb5bd; margin-top: 4px; line-height: 1.7; }
-    .ticket-modal-footer { padding: 16px 22px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; justify-content: flex-end; background: white; border-radius: 0 0 16px 16px; }
-    .btn-print { padding: 10px 22px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
-    .btn-cerrar-ticket { padding: 10px 18px; background: white; color: #6c757d; border: 2px solid #e9ecef; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+
+    .ticket-modal-footer { padding: 14px 20px; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; background: white; border-radius: 0 0 16px 16px; }
+    .btn-cerrar-ticket { padding: 10px 14px; background: white; color: #6c757d; border: 2px solid #e9ecef; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; }
     .btn-cerrar-ticket:hover { background: #f8f9fa; }
+    .btn-print-direct { padding: 10px 14px; background: white; color: #2c3e50; border: 2px solid #2c3e50; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; font-size: 0.88rem; }
+    .btn-print-direct:hover { background: #2c3e50; color: white; }
+    .btn-print { padding: 10px 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 7px; font-size: 0.88rem; }
+    .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
 
     .empty-state { text-align: center; padding: 50px 20px; color: #adb5bd; }
     .empty-state i { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.35; }
@@ -85,10 +103,7 @@
         #ticketPreview { width: 280px !important; background: white !important; }
     }
 
-    /* ── Tablet ── */
-    @media (max-width: 900px) {
-        .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    }
+    @media (max-width: 900px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 768px) {
         .kpi-card { padding: 14px 16px; }
         .kpi-ico { width: 38px; height: 38px; font-size: 1rem; }
@@ -96,8 +111,6 @@
         .hide-tablet { display: none; }
         .mov-table thead th, .mov-table tbody td { padding: 12px 14px; }
     }
-
-    /* ── Mobile: tabla → tarjetas ── */
     @media (max-width: 540px) {
         .page-header { padding: 14px 16px; margin-bottom: 14px; }
         .page-header h2 { font-size: 1.1rem; }
@@ -105,24 +118,13 @@
         .kpi-card { padding: 12px 14px; gap: 10px; border-radius: 12px; }
         .kpi-ico { width: 36px; height: 36px; font-size: 0.9rem; border-radius: 9px; }
         .kpi-info .kpi-label { font-size: 0.64rem; }
-        .kpi-info .kpi-val   { font-size: 1.15rem; }
-
+        .kpi-info .kpi-val { font-size: 1.15rem; }
         .mov-table thead { display: none; }
-        .mov-table tbody tr {
-            display: flex; flex-direction: column;
-            background: white; border: 1.5px solid #f0f0f0; border-radius: 12px;
-            margin: 0 14px 10px; padding: 14px 16px;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
-            border-bottom: 1.5px solid #f0f0f0 !important;
-        }
+        .mov-table tbody tr { display: flex; flex-direction: column; background: white; border: 1.5px solid #f0f0f0; border-radius: 12px; margin: 0 14px 10px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.04); border-bottom: 1.5px solid #f0f0f0 !important; }
         .mov-table tbody tr:last-child { margin-bottom: 14px; }
         .mov-table tbody td { padding: 5px 0; border: none; font-size: 0.86rem; display: flex; justify-content: space-between; align-items: center; }
-
-        /* Fila tipo: sin label, más destacada */
         .td-tipo { border-bottom: 1px dashed #f0f0f0 !important; padding-bottom: 10px !important; }
         .td-tipo::before { display: none; }
-
-        /* Labels */
         .td-id::before      { content: "ID"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
         .td-prods::before   { content: "Productos"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
         .td-total::before   { content: "Total"; font-size: 0.7rem; font-weight: 700; color: #adb5bd; text-transform: uppercase; }
@@ -130,12 +132,10 @@
         .td-accion::before  { display: none; }
         .td-accion { padding-top: 10px !important; }
         .btn-detalle { width: 100%; justify-content: center; padding: 10px; font-size: 0.85rem; }
+        .ticket-modal-footer { justify-content: stretch; }
+        .ticket-modal-footer button { flex: 1; justify-content: center; font-size: 0.82rem; padding: 9px 10px; }
     }
-
-    @media (max-width: 380px) {
-        .kpi-row { gap: 8px; }
-        .kpi-info .kpi-label { font-size: 0.6rem; }
-    }
+    @media (max-width: 380px) { .kpi-row { gap: 8px; } .kpi-info .kpi-label { font-size: 0.6rem; } }
 </style>
 {% endblock %}
 
@@ -202,14 +202,7 @@
                     <td class="td-total"><span class="total-cell {{ mov.tipo|lower }}">${{ mov.total|floatformat:2 }}</span></td>
                     <td class="td-hora hide-tablet hora-cell"><i class="bi bi-clock"></i> {{ mov.fecha|date:"H:i" }}</td>
                     <td class="td-accion">
-                        <button class="btn-detalle" onclick="verTicket(
-                            '{{ mov.id }}',
-                            '{{ mov.tipo }}',
-                            '{{ mov.total|floatformat:2 }}',
-                            '{{ mov.total_productos }}',
-                            '{{ mov.fecha|date:"d/m/Y" }}',
-                            '{{ mov.fecha|date:"H:i" }}'
-                        )">
+                        <button class="btn-detalle" onclick="verTicket('{{ mov.id }}', '{{ mov.tipo|lower }}')">
                             <i class="bi bi-receipt"></i> Ticket
                         </button>
                     </td>
@@ -226,67 +219,277 @@
     </div>
 </div>
 
-<!-- Modal Ticket -->
+<!-- Alerta -->
+<div class="stock-alerta" id="alertaMsg">
+    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;"></i>
+    <span id="alertaMsgText"></span>
+</div>
+
+<!-- MODAL TICKET -->
 <div class="ticket-overlay" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
     <div class="ticket-modal">
         <div class="ticket-modal-header">
-            <h6><i class="bi bi-receipt"></i> Comprobante de Movimiento</h6>
+            <h6><i class="bi bi-receipt"></i> <span id="tTipoHeader">Comprobante</span></h6>
             <button class="btn-close-modal" onclick="cerrarTicket()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div id="ticketPrintArea">
             <div id="ticketPreview">
                 <div class="ticket-store-name">MISHI</div>
-                <div class="ticket-store-sub">Comprobante de Movimiento</div>
+                <div class="ticket-store-name" style="font-size:0.85rem; letter-spacing:2px;">{{ ticket_nombre }}</div>
                 <hr class="ticket-divider solid">
                 <div class="ticket-info-row"><span>Folio</span><span id="tFolio">#—</span></div>
                 <div class="ticket-info-row"><span>Tipo</span><span id="tTipo">—</span></div>
                 <div class="ticket-info-row"><span>Fecha</span><span id="tFecha">—</span></div>
                 <div class="ticket-info-row"><span>Hora</span><span id="tHora">—</span></div>
+                <div id="tProveedorWrap" class="ticket-info-row" style="display:none;">
+                    <span>Proveedor</span><span id="tProveedor">—</span>
+                </div>
                 <hr class="ticket-divider">
                 <div class="ticket-items-header">
-                    <span>Detalle</span>
-                    <span style="text-align:right; grid-column: 2 / span 2;">Monto</span>
+                    <span>Producto</span>
+                    <span style="text-align:center;">Cant</span>
+                    <span style="text-align:right;">P.Unit</span>
+                    <span style="text-align:right;">Subtotal</span>
                 </div>
                 <div id="tItems"></div>
                 <hr class="ticket-divider solid">
-                <div class="ticket-total-row"><span>TOTAL</span><span id="tTotal">$0.00</span></div>
+                <div class="ticket-total-row">
+                    <span>TOTAL</span><span id="tTotal">$0.00</span>
+                </div>
+                <div class="ticket-items-summary">
+                    <span>Artículos:</span><span id="tArticulos">0</span>
+                </div>
                 <hr class="ticket-divider">
                 <div class="ticket-footer-text">
                     Documento generado por MISHI<br>
                     <span id="tFechaFooter">—</span><br>
-                    — Gracias por su preferencia —
+                    {{ ticket_mensaje }}
                 </div>
             </div>
         </div>
         <div class="ticket-modal-footer">
-            <button class="btn-cerrar-ticket" onclick="cerrarTicket()"><i class="bi bi-x-circle"></i> Cerrar</button>
-            <button class="btn-print" onclick="window.print()"><i class="bi bi-printer-fill"></i> Imprimir</button>
+            <button class="btn-cerrar-ticket" onclick="cerrarTicket()">
+                <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+            <button class="btn-print-direct" onclick="imprimirDirecto()"
+                    title="Imprimir directo en impresora térmica (QZ Tray / RawBT)">
+                <i class="bi bi-usb-symbol"></i> Directa
+            </button>
+            <button class="btn-print" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> Imprimir
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-function verTicket(id, tipo, monto, totalProductos, fecha, hora) {
-    document.getElementById('tFolio').textContent       = '#' + id;
-    document.getElementById('tTipo').textContent        = tipo;
-    document.getElementById('tFecha').textContent       = fecha;
-    document.getElementById('tHora').textContent        = hora;
-    document.getElementById('tTotal').textContent       = '$' + parseFloat(monto).toFixed(2);
-    document.getElementById('tFechaFooter').textContent = fecha + ' ' + hora;
-    document.getElementById('tItems').innerHTML = `
-        <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
-            <span class="item-name">${tipo} · ${totalProductos} producto${totalProductos != 1 ? 's' : ''}</span>
-            <span style="text-align:right; font-weight:700;">$${parseFloat(monto).toFixed(2)}</span>
-        </div>`;
+const TICKET_NOMBRE   = "{{ ticket_nombre }}";
+const TICKET_MENSAJE  = "{{ ticket_mensaje }}";
+
+let ticketActual = null;
+
+async function verTicket(id, tipo) {
+    // Abrir modal con loading
     document.getElementById('ticketOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    document.getElementById('tItems').innerHTML =
+        '<div style="text-align:center;padding:14px;color:#adb5bd;font-size:0.85rem;">Cargando...</div>';
+    ticketActual = null;
+
+    try {
+        let data;
+
+        if (tipo === 'venta') {
+            // ── Endpoint de venta ──────────────────────
+            const res = await fetch(`/movimientos/venta/detalle/${id}/json/`);
+            data = await res.json();
+
+            document.getElementById('tTipoHeader').textContent  = 'Ticket de Venta';
+            document.getElementById('tFolio').textContent       = '#' + data.id;
+            document.getElementById('tTipo').textContent        = 'Venta';
+            document.getElementById('tFecha').textContent       = data.fecha;
+            document.getElementById('tHora').textContent        = data.hora;
+            document.getElementById('tTotal').textContent       = '$' + parseFloat(data.monto).toFixed(2);
+            document.getElementById('tFechaFooter').textContent = data.fecha + ' ' + data.hora;
+            document.getElementById('tProveedorWrap').style.display = 'none';
+
+            if (data.items && data.items.length > 0) {
+                let totalArticulos = 0;
+                document.getElementById('tItems').innerHTML = data.items.map(item => {
+                    totalArticulos += item.cantidad;
+                    const pUnit = item.cantidad > 0
+                        ? (parseFloat(item.subtotal) / item.cantidad).toFixed(2)
+                        : '0.00';
+                    return `<div class="ticket-item-row">
+                        <span class="item-name">${item.nombre}</span>
+                        <span style="text-align:center;">${item.cantidad}</span>
+                        <span style="text-align:right;">$${pUnit}</span>
+                        <span style="text-align:right;font-weight:700;">$${parseFloat(item.subtotal).toFixed(2)}</span>
+                    </div>`;
+                }).join('');
+                document.getElementById('tArticulos').textContent = totalArticulos;
+            } else {
+                document.getElementById('tItems').innerHTML =
+                    '<div style="text-align:center;color:#adb5bd;font-size:0.8rem;padding:10px;">Sin detalle disponible</div>';
+                document.getElementById('tArticulos').textContent = 0;
+            }
+
+            ticketActual = { tipo: 'venta', ...data };
+
+        } else {
+            // ── Endpoint de compra ──────────────────────
+            const res = await fetch(`/movimientos/compra/detalle/${id}/json/`);
+            data = await res.json();
+
+            document.getElementById('tTipoHeader').textContent  = 'Ticket de Compra';
+            document.getElementById('tFolio').textContent       = '#' + (data.numero_factura || data.id);
+            document.getElementById('tTipo').textContent        = 'Compra';
+            document.getElementById('tFecha').textContent       = data.fecha;
+            document.getElementById('tHora').textContent        = data.hora || '';
+            document.getElementById('tTotal').textContent       = '$' + parseFloat(data.total).toFixed(2);
+            document.getElementById('tFechaFooter').textContent = data.fecha + (data.hora ? ' ' + data.hora : '');
+
+            if (data.proveedor) {
+                document.getElementById('tProveedor').textContent       = data.proveedor;
+                document.getElementById('tProveedorWrap').style.display = 'flex';
+            } else {
+                document.getElementById('tProveedorWrap').style.display = 'none';
+            }
+
+            if (data.detalles && data.detalles.length > 0) {
+                let totalArticulos = 0;
+                document.getElementById('tItems').innerHTML = data.detalles.map(d => {
+                    totalArticulos += d.cantidad;
+                    const pUnit = parseFloat(d.precio || (d.subtotal / d.cantidad)).toFixed(2);
+                    return `<div class="ticket-item-row">
+                        <span class="item-name">${d.nombre}</span>
+                        <span style="text-align:center;">${d.cantidad}</span>
+                        <span style="text-align:right;">$${pUnit}</span>
+                        <span style="text-align:right;font-weight:700;">$${parseFloat(d.subtotal).toFixed(2)}</span>
+                    </div>`;
+                }).join('');
+                document.getElementById('tArticulos').textContent = totalArticulos;
+            } else {
+                document.getElementById('tItems').innerHTML =
+                    '<div style="text-align:center;color:#adb5bd;font-size:0.8rem;padding:10px;">Sin detalle disponible</div>';
+                document.getElementById('tArticulos').textContent = data.total_productos || 0;
+            }
+
+            ticketActual = { tipo: 'compra', ...data };
+        }
+
+    } catch (e) {
+        console.error(e);
+        document.getElementById('tItems').innerHTML =
+            '<div style="text-align:center;color:red;font-size:0.8rem;padding:10px;">Error al cargar los detalles.</div>';
+    }
 }
+
 function cerrarTicket() {
     document.getElementById('ticketOverlay').classList.remove('open');
     document.body.style.overflow = '';
 }
+
 function cerrarSiOverlay(e) {
     if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+}
+
+function mostrarAlerta(msg) {
+    const el = document.getElementById('alertaMsg');
+    document.getElementById('alertaMsgText').textContent = msg;
+    el.style.display = 'flex';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+function normalizeEscPos(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\x20-\x7E]/g, '?');
+}
+function padEnd(str, len) {
+    str = normalizeEscPos(String(str));
+    if (str.length > len) str = str.substring(0, len - 1) + '.';
+    return str.padEnd(len);
+}
+function padStart(str, len) {
+    str = normalizeEscPos(String(str));
+    if (str.length > len) str = str.substring(0, len);
+    return str.padStart(len);
+}
+
+function construirTicketEscPos() {
+    if (!ticketActual) return null;
+    const d = ticketActual;
+    const ESC = '\x1b', GS = '\x1d', LF = '\n';
+    const COL_NOMBRE = 14, COL_CANT = 3, COL_SUBTOTAL = 9;
+
+    let t = ESC + '@';
+    t += ESC + 'a' + '\x01';
+    t += normalizeEscPos('MISHI') + LF;
+    t += normalizeEscPos(TICKET_NOMBRE) + LF;
+    t += ESC + 'a' + '\x00';
+    t += '-'.repeat(32) + LF;
+
+    if (d.tipo === 'venta') {
+        t += normalizeEscPos('Folio : #' + d.id)  + LF;
+        t += normalizeEscPos('Tipo  : Venta')      + LF;
+        t += normalizeEscPos('Fecha : ' + d.fecha) + LF;
+        t += normalizeEscPos('Hora  : ' + d.hora)  + LF;
+    } else {
+        t += normalizeEscPos('Folio : #' + (d.numero_factura || d.id)) + LF;
+        t += normalizeEscPos('Tipo  : Compra')                         + LF;
+        t += normalizeEscPos('Fecha : ' + d.fecha)                     + LF;
+        if (d.hora)      t += normalizeEscPos('Hora  : ' + d.hora)      + LF;
+        if (d.proveedor) t += normalizeEscPos('Prov. : ' + d.proveedor) + LF;
+    }
+
+    t += '-'.repeat(32) + LF;
+    t += padEnd('PRODUCTO', COL_NOMBRE) + ' ' + padStart('CAN', COL_CANT) + ' ' + padStart('SUBTOTAL', COL_SUBTOTAL) + LF;
+    t += '-'.repeat(32) + LF;
+
+    const items = d.tipo === 'venta'
+        ? (d.items || [])
+        : (d.detalles || []).map(x => ({ nombre: x.nombre, cantidad: x.cantidad, subtotal: x.subtotal }));
+
+    items.forEach(item => {
+        t += padEnd(item.nombre, COL_NOMBRE) + ' ' +
+             padStart(String(item.cantidad), COL_CANT) + ' ' +
+             padStart('$' + parseFloat(item.subtotal).toFixed(2), COL_SUBTOTAL) + LF;
+    });
+
+    t += '-'.repeat(32) + LF;
+    const totalVal = d.tipo === 'venta' ? parseFloat(d.monto) : parseFloat(d.total);
+    t += ESC + 'E' + '\x01';
+    t += padEnd('TOTAL:', 20) + padStart('$' + totalVal.toFixed(2), 12) + LF;
+    t += ESC + 'E' + '\x00';
+    t += LF;
+    t += ESC + 'a' + '\x01';
+    t += normalizeEscPos(TICKET_MENSAJE) + LF;
+    t += LF + LF + LF;
+    t += GS + 'V' + '\x00';
+    return t;
+}
+
+function imprimirAndroidRawBT() {
+    const rawData = construirTicketEscPos();
+    if (!rawData) { mostrarAlerta('No hay ticket disponible para imprimir'); return; }
+    window.location.href = "intent://print?data=" + encodeURIComponent(rawData) +
+        "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+}
+
+function imprimirQZTray() {
+    if (typeof qz === 'undefined') { mostrarAlerta('QZ Tray no está disponible'); return; }
+    const rawData = construirTicketEscPos();
+    if (!rawData) { mostrarAlerta('No hay ticket disponible para imprimir'); return; }
+    const config = qz.configs.create('TECH_CLA58');
+    const enviar = () => qz.print(config, [rawData])
+        .catch(err => { mostrarAlerta('Error al enviar a la impresora'); console.error(err); });
+    if (qz.websocket.isActive()) { enviar(); }
+    else { qz.websocket.connect().then(enviar).catch(() => mostrarAlerta('No se pudo conectar a QZ Tray')); }
+}
+
+function imprimirDirecto() {
+    if (!ticketActual) { mostrarAlerta('Espera a que cargue el ticket'); return; }
+    /Android/i.test(navigator.userAgent) ? imprimirAndroidRawBT() : imprimirQZTray();
 }
 </script>
 {% endblock %}

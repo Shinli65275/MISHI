@@ -311,6 +311,33 @@
 
     .btn-detalle:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
 
+    /* ── Alerta ── */
+    .stock-alerta {
+        display: none;
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff3cd;
+        border: 1.5px solid #ffc107;
+        color: #856404;
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        z-index: 3000;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        align-items: center;
+        gap: 10px;
+        max-width: 90vw;
+        animation: slideDown 0.25s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
     /* ── Modal ticket ── */
     .ticket-overlay {
         display: none;
@@ -320,6 +347,7 @@
         z-index: 1050;
         align-items: center;
         justify-content: center;
+        padding: 16px;
     }
 
     .ticket-overlay.open { display: flex; }
@@ -327,8 +355,8 @@
     .ticket-modal {
         background: white;
         border-radius: 16px;
-        width: 380px;
-        max-width: 95vw;
+        width: 100%;
+        max-width: 380px;
         max-height: 92vh;
         overflow-y: auto;
         box-shadow: 0 24px 70px rgba(0,0,0,0.28);
@@ -369,25 +397,28 @@
 
     .btn-close-modal:hover { background: rgba(255,255,255,0.35); }
 
+    /* ── Ticket preview — mismo estilo que nueva_venta ── */
     #ticketPreview {
-        padding: 26px 28px;
+        padding: 24px 26px;
         font-family: 'Courier New', Courier, monospace;
         background: #fafafa;
     }
 
     .ticket-store-name { text-align: center; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; color: #2c3e50; margin-bottom: 2px; }
     .ticket-store-sub  { text-align: center; font-size: 0.72rem; color: #6c757d; margin-bottom: 16px; letter-spacing: 1px; }
-    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 12px 0; }
+
+    .ticket-divider { border: none; border-top: 1px dashed #adb5bd; margin: 10px 0; }
     .ticket-divider.solid { border-top: 2px solid #2c3e50; }
-    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 5px; }
+
+    .ticket-info-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: #495057; margin-bottom: 4px; }
     .ticket-info-row span:first-child { color: #6c757d; }
     .ticket-info-row span:last-child  { font-weight: 700; }
 
     .ticket-items-header {
         display: grid;
-        grid-template-columns: 1fr 42px 80px;
-        gap: 4px;
-        font-size: 0.68rem;
+        grid-template-columns: 1fr 34px 64px 64px;
+        gap: 3px;
+        font-size: 0.67rem;
         font-weight: 700;
         color: #2c3e50;
         text-transform: uppercase;
@@ -398,31 +429,67 @@
 
     .ticket-item-row {
         display: grid;
-        grid-template-columns: 1fr 42px 80px;
-        gap: 4px;
-        font-size: 0.78rem;
+        grid-template-columns: 1fr 34px 64px 64px;
+        gap: 3px;
+        font-size: 0.77rem;
         color: #495057;
-        padding: 6px 0;
+        padding: 5px 0;
         border-bottom: 1px dotted #e9ecef;
         align-items: center;
     }
 
     .ticket-item-row .item-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+
+    .ticket-total-row { display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: #2c3e50; padding: 6px 0 2px; }
+    .ticket-items-summary { display: flex; justify-content: space-between; font-size: 0.75rem; color: #6c757d; margin-top: 3px; }
+
     .ticket-footer-text { text-align: center; font-size: 0.7rem; color: #adb5bd; margin-top: 4px; line-height: 1.7; }
 
+    /* ── Modal footer ── */
     .ticket-modal-footer {
-        padding: 16px 22px;
+        padding: 14px 20px;
         border-top: 1px solid #f0f0f0;
         display: flex;
-        gap: 10px;
+        gap: 8px;
         justify-content: flex-end;
+        flex-wrap: wrap;
         background: white;
         border-radius: 0 0 16px 16px;
     }
 
+    .btn-cerrar-ticket {
+        padding: 10px 14px;
+        background: white;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.88rem;
+    }
+
+    .btn-cerrar-ticket:hover { background: #f8f9fa; }
+
+    .btn-print-direct {
+        padding: 10px 14px;
+        background: white;
+        color: #2c3e50;
+        border: 2px solid #2c3e50;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.88rem;
+    }
+
+    .btn-print-direct:hover { background: #2c3e50; color: white; }
+
     .btn-print {
-        padding: 10px 22px;
+        padding: 10px 18px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
@@ -432,25 +499,11 @@
         transition: all 0.3s;
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
+        gap: 7px;
+        font-size: 0.88rem;
     }
 
     .btn-print:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(102,126,234,0.4); }
-
-    .btn-cerrar-ticket {
-        padding: 10px 18px;
-        background: white;
-        color: #6c757d;
-        border: 2px solid #e9ecef;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-    }
-
-    .btn-cerrar-ticket:hover { background: #f8f9fa; }
 
     @media print {
         body * { visibility: hidden !important; }
@@ -467,24 +520,17 @@
     }
 
     /* ── Responsive tabla ── */
-
-    /* Ocultar columna fecha en tablet */
     @media (max-width: 768px) {
         .page-header h2 { font-size: 1.2rem; }
         .stats-grid { grid-template-columns: 1fr 1fr; }
-
         .col-fecha { display: none; }
         .col-ref   { display: none; }
-
         .ingresos-table thead th,
         .ingresos-table tbody td { padding: 11px 10px; }
     }
 
-    /* En móvil: convertir tabla en tarjetas apiladas */
     @media (max-width: 540px) {
         .stats-grid { grid-template-columns: 1fr 1fr; }
-
-        /* Ocultar la tabla tradicional */
         .tabla-wrap { overflow: visible; }
         .ingresos-table thead { display: none; }
 
@@ -511,7 +557,6 @@
             font-size: 0.86rem;
         }
 
-        /* Etiquetas automáticas via data-label */
         .ingresos-table tbody td::before {
             content: attr(data-label);
             font-size: 0.72rem;
@@ -523,11 +568,9 @@
             margin-right: 10px;
         }
 
-        /* Ocultar celdas innecesarias en móvil */
         .col-id    { display: none; }
         .col-ref   { display: none; }
 
-        /* Fila del concepto: más destacada */
         .col-concepto {
             border-bottom: 1px dashed #f0f0f0;
             padding-bottom: 9px !important;
@@ -535,16 +578,13 @@
         }
 
         .col-concepto::before { display: none; }
-
         .concepto-cell { width: 100%; }
         .concepto-icon { display: none; }
         .concepto-nombre { font-size: 0.95rem; }
 
-        /* Monto alineado a la derecha */
         .col-monto { justify-content: space-between; }
         .monto-valor { font-size: 1rem; }
 
-        /* Botón ticket al ancho completo */
         .col-accion { justify-content: flex-end; padding-top: 8px; }
         .col-accion::before { display: none; }
         .btn-detalle { width: 100%; justify-content: center; padding: 9px; }
@@ -556,6 +596,8 @@
         .filtro-input   { width: 100%; box-sizing: border-box; }
         .btn-filtrar    { width: 100%; justify-content: center; }
         .btn-limpiar    { width: 100%; justify-content: center; text-align: center; }
+        .ticket-modal-footer { justify-content: stretch; }
+        .ticket-modal-footer button { flex: 1; justify-content: center; font-size: 0.82rem; padding: 9px 10px; }
     }
 
     @media (max-width: 400px) {
@@ -734,47 +776,75 @@
     </div>
 </div>
 
-<!-- Modal Ticket -->
+<!-- Alerta -->
+<div class="stock-alerta" id="alertaMsg">
+    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;"></i>
+    <span id="alertaMsgText"></span>
+</div>
+
+<!-- ══════════════════════════════
+     MODAL TICKET
+══════════════════════════════ -->
 <div class="ticket-overlay" id="ticketOverlay" onclick="cerrarSiOverlay(event)">
     <div class="ticket-modal">
         <div class="ticket-modal-header">
             <h6><i class="bi bi-receipt"></i> Comprobante de Ingreso</h6>
             <button class="btn-close-modal" onclick="cerrarTicket()"><i class="bi bi-x-lg"></i></button>
         </div>
+
         <div id="ticketPrintArea">
             <div id="ticketPreview">
                 <div class="ticket-store-name">MISHI</div>
-                <div class="ticket-store-sub">Comprobante de Ingreso</div>
+                <div class="ticket-store-name" style="font-size:0.85rem; letter-spacing:2px;">
+                    {{ ticket_nombre }}
+                </div>
+
                 <hr class="ticket-divider solid">
+
                 <div class="ticket-info-row"><span>Folio</span><span id="tFolio">#—</span></div>
                 <div class="ticket-info-row"><span>Fecha</span><span id="tFecha">—</span></div>
                 <div class="ticket-info-row"><span>Hora</span><span id="tHora">—</span></div>
+
                 <hr class="ticket-divider">
+
                 <div class="ticket-items-header">
                     <span>Concepto</span>
-                    <span style="text-align:right; grid-column: 2 / span 2;">Monto</span>
+                    <span style="text-align:center;">Cant</span>
+                    <span style="text-align:right;">P.Unit</span>
+                    <span style="text-align:right;">Subtotal</span>
                 </div>
+
                 <div id="tItems"></div>
+
                 <hr class="ticket-divider solid">
+
                 <div class="ticket-total-row">
                     <span>TOTAL</span>
                     <span id="tTotal">$0.00</span>
                 </div>
+
                 <hr class="ticket-divider">
+
                 <div id="tRefWrap" class="ticket-info-row" style="display:none;">
                     <span>Referencia</span><span id="tRef">—</span>
                 </div>
                 <hr class="ticket-divider" id="tRefDivider" style="display:none;">
+
                 <div class="ticket-footer-text">
                     Documento generado por MISHI<br>
                     <span id="tFechaFooter">—</span><br>
-                    — Gracias por su preferencia —
+                    {{ ticket_mensaje }}
                 </div>
             </div>
         </div>
+
         <div class="ticket-modal-footer">
             <button class="btn-cerrar-ticket" onclick="cerrarTicket()">
                 <i class="bi bi-x-circle"></i> Cerrar
+            </button>
+            <button class="btn-print-direct" onclick="imprimirDirecto()"
+                    title="Imprimir directo en impresora térmica (QZ Tray / RawBT)">
+                <i class="bi bi-usb-symbol"></i> Directa
             </button>
             <button class="btn-print" onclick="window.print()">
                 <i class="bi bi-printer-fill"></i> Imprimir
@@ -784,7 +854,18 @@
 </div>
 
 <script>
-// Reloj
+/* ══════════════════════════════
+   Variables Django
+══════════════════════════════ */
+const TICKET_NOMBRE  = "{{ ticket_nombre|escapejs }}";
+const TICKET_MENSAJE = "{{ ticket_mensaje|escapejs }}";
+
+/* Estado del ticket actualmente visible */
+let ticketActual = null;
+
+/* ══════════════════════════════
+   RELOJ
+══════════════════════════════ */
 function actualizarReloj() {
     const now = new Date();
     document.getElementById('horaActual').textContent =
@@ -794,42 +875,59 @@ function actualizarReloj() {
 actualizarReloj();
 setInterval(actualizarReloj, 60000);
 
+/* ══════════════════════════════
+   ALERTA
+══════════════════════════════ */
+function mostrarAlerta(msg) {
+    const el = document.getElementById('alertaMsg');
+    document.getElementById('alertaMsgText').textContent = msg;
+    el.style.display = 'flex';
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+
+/* ══════════════════════════════
+   VER TICKET (fetch + render)
+══════════════════════════════ */
 async function verTicket(ingresoId) {
-    // Mostrar modal con loading
     document.getElementById('ticketOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
     document.getElementById('tItems').innerHTML =
         '<div style="text-align:center; padding:14px; color:#adb5bd; font-size:0.85rem;">Cargando...</div>';
 
+    ticketActual = null; // limpiar mientras carga
+
     try {
-        const res = await fetch(`/ventas/ingresos/detalle/${ingresoId}/json/`);
+        const res  = await fetch(`/ventas/ingresos/detalle/${ingresoId}/json/`);
         const data = await res.json();
 
-        document.getElementById('tFolio').textContent     = '#' + data.id;
-        document.getElementById('tFecha').textContent     = data.fecha;
-        document.getElementById('tHora').textContent      = data.hora;
-        document.getElementById('tTotal').textContent     = '$' + data.monto.toFixed(2);
+        document.getElementById('tFolio').textContent      = '#' + data.id;
+        document.getElementById('tFecha').textContent      = data.fecha;
+        document.getElementById('tHora').textContent       = data.hora;
+        document.getElementById('tTotal').textContent      = '$' + parseFloat(data.monto).toFixed(2);
         document.getElementById('tFechaFooter').textContent = data.fecha + ' ' + data.hora;
 
-        // ── Ítems ──
+        /* ── Ítems ── */
         if (data.items && data.items.length > 0) {
             document.getElementById('tItems').innerHTML = data.items.map(item => `
                 <div class="ticket-item-row">
                     <span class="item-name">${item.nombre}</span>
-                    <span style="text-align:right;">${item.cantidad}</span>
-                    <span style="text-align:right; font-weight:700;">$${item.subtotal.toFixed(2)}</span>
+                    <span style="text-align:center;">${item.cantidad}</span>
+                    <span style="text-align:right;">$${parseFloat(item.subtotal / item.cantidad).toFixed(2)}</span>
+                    <span style="text-align:right; font-weight:700;">$${parseFloat(item.subtotal).toFixed(2)}</span>
                 </div>
             `).join('');
         } else {
-            // Ingreso sin venta vinculada (registros viejos)
             document.getElementById('tItems').innerHTML = `
-                <div class="ticket-item-row" style="grid-template-columns: 1fr auto;">
+                <div class="ticket-item-row">
                     <span class="item-name">${data.concepto}</span>
-                    <span style="text-align:right; font-weight:700;">$${data.monto.toFixed(2)}</span>
+                    <span style="text-align:center;">1</span>
+                    <span style="text-align:right;">$${parseFloat(data.monto).toFixed(2)}</span>
+                    <span style="text-align:right; font-weight:700;">$${parseFloat(data.monto).toFixed(2)}</span>
                 </div>`;
         }
 
-        // ── Referencia ──
+        /* ── Referencia ── */
         const refWrap    = document.getElementById('tRefWrap');
         const refDivider = document.getElementById('tRefDivider');
         if (data.referencia) {
@@ -840,6 +938,9 @@ async function verTicket(ingresoId) {
             refWrap.style.display    = 'none';
             refDivider.style.display = 'none';
         }
+
+        /* Guardar datos para impresión directa */
+        ticketActual = data;
 
     } catch (e) {
         document.getElementById('tItems').innerHTML =
@@ -854,6 +955,160 @@ function cerrarTicket() {
 
 function cerrarSiOverlay(e) {
     if (e.target === document.getElementById('ticketOverlay')) cerrarTicket();
+}
+
+/* ══════════════════════════════
+   HELPERS ESC/POS
+   (misma lógica que nueva_venta)
+══════════════════════════════ */
+function normalizeEscPos(str) {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')   // quitar acentos
+        .replace(/[^\x20-\x7E]/g, '?');    // no-ASCII → ?
+}
+
+function padEnd(str, len) {
+    str = normalizeEscPos(String(str));
+    if (str.length > len) str = str.substring(0, len - 1) + '.';
+    return str.padEnd(len);
+}
+
+function padStart(str, len) {
+    str = normalizeEscPos(String(str));
+    if (str.length > len) str = str.substring(0, len);
+    return str.padStart(len);
+}
+
+/* ══════════════════════════════
+   CONSTRUIR TICKET ESC/POS
+══════════════════════════════ */
+function construirTicketEscPos() {
+    if (!ticketActual) return null;
+
+    const d   = ticketActual;
+    const ESC = '\x1b';
+    const GS  = '\x1d';
+    const LF  = '\n';
+
+    const COL_NOMBRE   = 14;
+    const COL_CANT     = 3;
+    const COL_SUBTOTAL = 9;
+
+    let t = '';
+
+    // Reset
+    t += ESC + '@';
+
+    // Centrado — encabezado
+    t += ESC + 'a' + '\x01';
+    t += normalizeEscPos('MISHI') + LF;
+    t += normalizeEscPos(TICKET_NOMBRE) + LF;
+
+    // Izquierda — datos ingreso
+    t += ESC + 'a' + '\x00';
+    t += '-'.repeat(32) + LF;
+    t += normalizeEscPos('Folio : #' + d.id)              + LF;
+    t += normalizeEscPos('Fecha : '  + d.fecha)           + LF;
+    t += normalizeEscPos('Hora  : '  + d.hora)            + LF;
+    t += '-'.repeat(32) + LF;
+
+    // Encabezado columnas
+    t += padEnd('CONCEPTO', COL_NOMBRE) + ' ' +
+         padStart('CAN', COL_CANT)      + ' ' +
+         padStart('SUBTOTAL', COL_SUBTOTAL) + LF;
+    t += '-'.repeat(32) + LF;
+
+    // Ítems
+    const items = (d.items && d.items.length > 0)
+        ? d.items
+        : [{ nombre: d.concepto, cantidad: 1, subtotal: parseFloat(d.monto) }];
+
+    items.forEach(item => {
+        const nombre   = padEnd(item.nombre, COL_NOMBRE);
+        const cantidad = padStart(String(item.cantidad), COL_CANT);
+        const subtotal = padStart('$' + parseFloat(item.subtotal).toFixed(2), COL_SUBTOTAL);
+        t += `${nombre} ${cantidad} ${subtotal}` + LF;
+    });
+
+    t += '-'.repeat(32) + LF;
+
+    // Total — negrita
+    t += ESC + 'E' + '\x01';
+    t += padEnd('TOTAL:', 20) + padStart('$' + parseFloat(d.monto).toFixed(2), 12) + LF;
+    t += ESC + 'E' + '\x00';
+
+    // Referencia (si existe)
+    if (d.referencia) {
+        t += LF;
+        t += normalizeEscPos('Ref: ' + d.referencia) + LF;
+    }
+
+    t += LF;
+
+    // Footer centrado
+    t += ESC + 'a' + '\x01';
+    t += normalizeEscPos(TICKET_MENSAJE) + LF;
+    t += LF + LF + LF;
+
+    // Corte de papel
+    t += GS + 'V' + '\x00';
+
+    return t;
+}
+
+/* ══════════════════════════════
+   IMPRESIÓN DIRECTA
+══════════════════════════════ */
+
+/* Android → RawBT */
+function imprimirAndroidRawBT() {
+    const rawData = construirTicketEscPos();
+    if (!rawData) { mostrarAlerta('No hay ticket disponible para imprimir'); return; }
+    const intent =
+        "intent://print?data=" + encodeURIComponent(rawData) +
+        "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+    window.location.href = intent;
+}
+
+/* Desktop → QZ Tray */
+function imprimirQZTray() {
+    if (typeof qz === 'undefined') {
+        mostrarAlerta('QZ Tray no está disponible en este equipo');
+        return;
+    }
+
+    const rawData = construirTicketEscPos();
+    if (!rawData) { mostrarAlerta('No hay ticket disponible para imprimir'); return; }
+
+    const config = qz.configs.create('TECH_CLA58');
+
+    const enviar = () => qz.print(config, [rawData])
+        .catch(err => {
+            mostrarAlerta('Error al enviar a la impresora');
+            console.error(err);
+        });
+
+    if (qz.websocket.isActive()) {
+        enviar();
+    } else {
+        qz.websocket.connect()
+            .then(enviar)
+            .catch(() => mostrarAlerta('No se pudo conectar a QZ Tray'));
+    }
+}
+
+/* Punto de entrada — detecta plataforma */
+function imprimirDirecto() {
+    if (!ticketActual) {
+        mostrarAlerta('Espera a que cargue el ticket antes de imprimir');
+        return;
+    }
+    if (/Android/i.test(navigator.userAgent)) {
+        imprimirAndroidRawBT();
+    } else {
+        imprimirQZTray();
+    }
 }
 </script>
 {% endblock %}

@@ -10,3 +10,11 @@ class Negocio(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+class ticket(models.Model):
+    negocio    = models.ForeignKey(Negocio, on_delete=models.CASCADE)
+    nombre_negocio = models.CharField(max_length=100)
+    mensaje = models.CharField(max_length=100)
+    def __str__(self):
+        return f"Ticket – {self.negocio.nombre}"

@@ -14,6 +14,7 @@ from negocios.utils import get_negocio_activo
 from usuarios.models import UsuarioNegocio
 from inventario.models import Lote, Producto
 from ventas.models import DetalleVenta, Venta, Ingreso
+from negocios.models import ticket
 
 def buscar_producto_codigo(request):
 
@@ -48,10 +49,16 @@ def nueva_venta(request):
         }
         for p in productos
     ])
+    try:
+        ticket_config = ticket.objects.get(negocio=negocio) 
+    except ticket.DoesNotExist:
+        ticket_config = None
 
     return render(request, "ventas/nueva_venta.html", {
         "productos":      productos,
         "productos_json": productos_json,
+        'ticket_nombre':  ticket_config.nombre_negocio if ticket_config else 'MI NEGOCIO',
+        'ticket_mensaje': ticket_config.mensaje         if ticket_config else 'Gracias por su compra',
     })
 
 
@@ -261,12 +268,20 @@ def lista_ingresos(request):
     paginator = Paginator(ingresos_qs, 20)
     page = request.GET.get("page", 1)
     ingresos = paginator.get_page(page)
+    
+    try:
+        ticket_config = ticket.objects.get(negocio=negocio) 
+    except ticket.DoesNotExist:
+        ticket_config = None
+
 
     return render(request, "ventas/lista_ingresos.html", {
         "ingresos": ingresos,
         "total_general": total_general,
         "total_hoy": total_hoy,
         "total_registros": total_registros,
+        'ticket_nombre':  ticket_config.nombre_negocio if ticket_config else 'MI NEGOCIO',
+        'ticket_mensaje': ticket_config.mensaje         if ticket_config else 'Gracias por su compra',
     })
 
 @login_required

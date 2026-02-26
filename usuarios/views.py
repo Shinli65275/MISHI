@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from negocios.models import Negocio
+from negocios.models import Negocio,ticket
 from negocios.utils import get_negocio_activo, get_rol_usuario
 from .models import UsuarioNegocio
 
@@ -45,6 +45,13 @@ def registro(request):
             negocio=negocio,
             rol="ALMACEN_ADMIN" if distribuidor == "si" else "ADMIN"
         )
+        
+        ticket.objects.create(
+            negocio = negocio,
+            nombre_negocio = nombre_negocio,
+            mensaje = "",
+        )
+
 
 
         # Loguear automáticamente
@@ -116,7 +123,17 @@ def perfil(request):
         except UsuarioNegocio.DoesNotExist:
             pass
 
-    return render(request, "usuarios/perfil.html", {"negocio": negocio, "rol": rol})
+    ticket_config = None
+    if negocio:
+        ticket_config, _ = ticket.objects.get_or_create(
+            negocio=negocio,
+            defaults={
+                'nombre_negocio': negocio.nombre,
+                'mensaje': 'Gracias por su compra'
+            }
+        )
+
+    return render(request, "usuarios/perfil.html", {"negocio": negocio, "rol": rol,'ticket_config': ticket_config,})
 
 @login_required
 def cambiar_password(request):
@@ -247,3 +264,23 @@ def editar_empleado(request, usuario_negocio_id):
     return render(request, 'usuarios/editar_empleado.html', {
         'usuario_negocio': usuario_negocio
     })
+
+
+@login_required
+def guardar_ticket(request):
+    if request.method != 'POST':
+        return redirect('perfil')
+
+    # Solo admins
+    if get_rol_usuario(request) != 'ADMIN':   
+        messages.error(request, 'No tienes permiso para hacer esto.')
+        return redirect('perfil')
+
+    negocio = negocio   = get_negocio_activo(request)
+    ticket_config, _ = ticket.objects.get_or_create(negocio=negocio)
+    ticket_config.nombre_negocio = request.POST.get('nombre_negocio', '').strip()
+    ticket_config.mensaje        = request.POST.get('mensaje', '').strip()
+    ticket_config.save()
+
+    messages.success(request, 'Configuración del ticket actualizada.')
+    return redirect('perfil')
