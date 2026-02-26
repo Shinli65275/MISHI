@@ -1,5 +1,6 @@
 <head>
     <title>Registro de Usuario - MISHI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <style>
@@ -9,6 +10,7 @@
         align-items: center;
         justify-content: center;
         padding: 30px 16px;
+        background: #f0f2ff; 
     }
 
     .registro-card {
@@ -16,14 +18,14 @@
         border-radius: 20px;
         box-shadow: 0 8px 40px rgba(0,0,0,0.10);
         width: 100%;
-        max-width: 520px;
+        max-width: 440px;
         overflow: hidden;
     }
 
     /* ── Header del card ── */
     .registro-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 32px 36px 28px;
+        padding: 24px 32px 20px;  
         text-align: center;
         color: white;
     }
@@ -42,7 +44,7 @@
     }
 
     /* ── Cuerpo ── */
-    .registro-body { padding: 32px 36px 36px; }
+    .registro-body { padding: 26px 32px 32px; } 
 
     /* ── Sección ── */
     .seccion-titulo {
@@ -263,11 +265,44 @@
         color: #667eea;
     }
 
-    @media (max-width: 500px) {
-        .registro-body { padding: 24px 22px 28px; }
-        .registro-header { padding: 26px 22px 22px; }
-        .campos-grid { grid-template-columns: 1fr; }
+    @media (max-width: 600px) {
+        .registro-wrapper {
+            padding: 0;
+            align-items: flex-start;
+            background: white;
+        }
+
+        .registro-card {
+            border-radius: 0;
+            box-shadow: none;
+            min-height: 100vh;
+            max-width: 100%;
+        }
+
+        .registro-header {
+            padding: 32px 24px 26px;  /* más generoso en móvil */
+        }
+
+        .registro-logo { font-size: 2rem; }
+
+        .registro-body { padding: 28px 24px 36px; }
+
+        .campo input { font-size: 0.95rem; padding: 14px 15px 14px 42px; }
+
+        .campos-grid { grid-template-columns: 1fr; gap: 0; }
         .campos-grid .campo.full { grid-column: 1; }
+
+        .distribuidor-field { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .distribuidor-opciones { gap: 24px; }
+
+        .btn-registrar { padding: 15px; font-size: 1rem; margin-top: 24px; }
+        .seccion + .seccion { margin-top: 24px; }
+    }
+
+    @media (max-width: 380px) {
+        .registro-header { padding: 26px 20px 22px; }
+        .registro-body { padding: 22px 18px 30px; }
+        .registro-logo { font-size: 1.7rem; letter-spacing: 3px; }
     }
 </style>
 
@@ -341,8 +376,8 @@
                                    value="{{ request.POST.telefono|default:'' }}">
                             <i class="bi bi-telephone campo-icon"></i>
                         </div>
-
-                        <div class="campo full">
+                        <!-- ── Campo: ¿Eres distribuidor? ── -->
+                        <!--<div class="campo full">
                             <div class="distribuidor-field">
                                 <div class="distribuidor-label">
                                     <i class="bi bi-truck"></i> ¿Eres distribuidor?
@@ -362,7 +397,7 @@
                                     </label>
                                 </div>
                             </div>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
 

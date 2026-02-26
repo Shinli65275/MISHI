@@ -270,7 +270,7 @@ def lista_egresos(request):
         "fecha_hasta": fecha_hasta_str,
         "categoria_filtro": categoria_filtro,
     })
-
+@login_required
 def lista_compras(request):
     negocio_id = request.session.get('negocio_id')
     
