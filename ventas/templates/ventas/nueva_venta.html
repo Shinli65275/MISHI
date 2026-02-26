@@ -1184,7 +1184,29 @@ function imprimirDirectoDesdeHeader() {
     enviarAImpresora(ultimoTicket);
 }
 
+function imprimirAndroidRawBT(ticket) {
+    const rawData = construirTicketEscPos(ticket);
+
+    // Convertir a Base64 correctamente
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(rawData);
+
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+
+    const base64 = btoa(binary);
+
+    // Enviar a RawBT
+    window.location.href = "rawbt://print?base64=" + encodeURIComponent(base64);
+}
+
 function enviarAImpresora(ticket) {
+    if (/Android/i.test(navigator.userAgent)) {
+        imprimirAndroidRawBT(ticket);
+        return;
+    }
+
+    // ---- PC (QZ Tray) ----
     if (typeof qz === 'undefined') {
         mostrarAlerta('QZ Tray no disponible');
         return;
@@ -1207,6 +1229,8 @@ function enviarAImpresora(ticket) {
             .catch(() => mostrarAlerta('No se pudo conectar a QZ Tray'));
     }
 }
+
+
 
 // Habilitar botón del header al renderizar ticket
 const _origRenderTicket = renderTicket;
